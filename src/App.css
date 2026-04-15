@@ -1,0 +1,306 @@
+@import './index.css';
+
+.app-layout {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+.main-content {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+/* Kanban specific layouts */
+.board-scroll-area {
+  display: flex;
+  gap: 32px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding-bottom: 24px;
+  min-height: 0;
+  flex: 1;
+}
+
+.kanban-column {
+  min-width: var(--column-width);
+  max-width: var(--column-width);
+  background: var(--bg-column);
+  backdrop-filter: blur(8px);
+  border-radius: var(--radius-lg);
+  display: flex;
+  flex-direction: column;
+  max-height: 100%;
+  border: 1px solid var(--border-color);
+  transition: all var(--transition-normal);
+}
+
+.kanban-column.over-limit {
+  border-color: var(--color-danger);
+  box-shadow: 0 0 10px rgba(239, 68, 68, 0.2);
+}
+
+.column-header {
+  padding: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.column-title-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.column-title {
+  font-weight: 600;
+  font-size: 1rem;
+}
+
+.column-count {
+  background: #ffffff;
+  color: #0d1117;
+  padding: 2px 10px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 24px;
+  transition: all var(--transition-fast);
+}
+
+.column-count.over-limit {
+  background: var(--color-danger);
+  color: white;
+}
+
+/* Definition of Done Tooltip */
+.dod-badge {
+  color: var(--text-secondary);
+  cursor: help;
+  position: relative;
+}
+
+.dod-tooltip {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  width: 250px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  padding: 12px;
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-md);
+  z-index: 10;
+  font-size: 0.85rem;
+  opacity: 0;
+  visibility: hidden;
+  transition: all var(--transition-fast);
+  transform: translateY(5px);
+}
+
+.dod-badge:hover .dod-tooltip {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.column-body {
+  flex: 1;
+  padding: 12px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-height: 100px;
+}
+
+/* Kanban Card */
+.kanban-card {
+  background: var(--bg-card);
+  border-radius: 14px;
+  padding: 20px;
+  border: 1.5px solid #21262d; 
+  cursor: grab;
+  position: relative;
+  transition: all var(--transition-normal);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.kanban-card:hover {
+  border-color: #30363d;
+  background: #161b22;
+  transform: translateY(-2px);
+}
+
+.kanban-card.is-dragging {
+  opacity: 0.5;
+  box-shadow: var(--shadow-lg);
+  cursor: grabbing;
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.card-type-badge {
+  font-size: 0.75rem;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Type variations */
+.type-feature { background: var(--bg-feature); color: var(--color-feature); border: 1px solid rgba(59, 130, 246, 0.3); }
+.type-bug { background: var(--bg-bug); color: var(--color-bug); border: 1px solid rgba(239, 68, 68, 0.3); }
+.type-expedite { background: var(--bg-expedite); color: var(--color-expedite); border: 1px solid rgba(249, 115, 22, 0.3); animation: pulse-border 2s infinite; }
+.type-techdebt { background: var(--bg-techdebt); color: var(--color-techdebt); border: 1px solid rgba(168, 85, 247, 0.3); }
+.type-spike { background: var(--bg-spike); color: var(--color-spike); border: 1px solid rgba(100, 116, 139, 0.3); }
+
+@keyframes pulse-border {
+  0% { box-shadow: 0 0 0 0 rgba(249, 115, 22, 0.4); }
+  70% { box-shadow: 0 0 0 4px rgba(249, 115, 22, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(249, 115, 22, 0); }
+}
+
+.card-title {
+  font-size: 0.9rem;
+  font-weight: 500;
+  line-height: 1.6;
+  color: var(--text-primary);
+  letter-spacing: -0.01em;
+}
+
+.card-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 8px;
+  padding-top: 12px;
+  border-top: 1px solid #21262d; 
+}
+
+.card-footer-icons {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+}
+
+.card-aging {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+}
+
+.card-aging.stale {
+  color: var(--color-warning);
+}
+.card-aging.very-stale {
+  color: var(--color-danger);
+}
+
+.card-assignee {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--accent-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
+  font-weight: 600;
+  border: 2px solid var(--bg-card);
+  color: white;
+}
+
+/* Swimlane */
+.swimlane-container {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 24px;
+  background: rgba(249, 115, 22, 0.05); /* Expedite styling */
+  border: 1px solid rgba(249, 115, 22, 0.2);
+  border-radius: var(--radius-md);
+  transition: all var(--transition-normal);
+}
+
+.swimlane-container.empty {
+  margin-bottom: 12px;
+  background: rgba(249, 115, 22, 0.02);
+}
+
+.swimlane-header {
+  padding: 12px 16px;
+  font-weight: 600;
+  color: var(--color-expedite);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-bottom: 1px solid rgba(249, 115, 22, 0.2);
+}
+
+.swimlane-body {
+  padding: 16px;
+  min-height: 120px;
+  display: flex;
+  gap: 16px;
+  overflow-x: auto;
+  transition: all var(--transition-normal);
+}
+
+.swimlane-container.empty .swimlane-body {
+  min-height: 40px;
+  padding: 8px 16px;
+}
+
+/* Utilities */
+.btn {
+  padding: 8px 16px;
+  border-radius: var(--radius-sm);
+  font-weight: 500;
+  transition: all var(--transition-fast);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-primary {
+  background: var(--accent-primary);
+  color: white;
+}
+.btn-primary:hover {
+  background: var(--accent-hover);
+  box-shadow: var(--shadow-glow);
+}
+
+.btn-ghost {
+  background: transparent;
+  color: var(--text-secondary);
+}
+.btn-ghost:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-primary);
+}
+
+.suggestion-item {
+  transition: background var(--transition-fast);
+}
+
+.suggestion-item:hover {
+  background: var(--bg-card);
+}

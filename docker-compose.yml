@@ -1,0 +1,9 @@
+services:
+  kanban-board:
+    container_name: kanban-app-v1-1
+    build: .
+    ports:
+      - "8101:5173"
+    environment:
+      - NODE_ENV=development
+    restart: always

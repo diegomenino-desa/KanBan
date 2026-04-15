@@ -1,0 +1,123 @@
+import React, { useState } from 'react';
+import { DndContext, closestCorners, useSensor, useSensors, PointerSensor, KeyboardSensor } from '@dnd-kit/core';
+import { sortableKeyboardCoordinates } from '@dnd-kit/sortable';
+import type { DragEndEvent } from '@dnd-kit/core';
+import { SortableContext, horizontalListSortingStrategy } from '@dnd-kit/sortable';
+import { useKanban } from '../../KanbanContext';
+import { KanbanColumn } from '../Columns/KanbanColumn';
+import { KanbanCard } from '../Cards/KanbanCard';
+import { Plus } from 'lucide-react';
+import { translations } from '../../i18n';
+import { NewCardModal } from '../Cards/NewCardModal';
+
+export const BoardArea: React.FC = () => {
+  const { board, moveCard, reorderColumn, addColumn, reorderCard, addCard, lang } = useKanban();
+  const t = translations[lang];
+  const [isAddingExpedite, setIsAddingExpedite] = useState(false);
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 5,
+      },
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (!over) return;
+
+    if (active.data.current?.type === 'Card' && over.data.current?.type === 'Column') {
+      moveCard(active.id as string, over.id as string);
+    } else if (active.data.current?.type === 'Card' && over.data.current?.type === 'Card') {
+      if (active.id !== over.id) {
+        const overCardColumnId = over.data.current.card.columnId;
+        const activeCardColumnId = active.data.current.card.columnId;
+        
+        if (activeCardColumnId !== overCardColumnId) {
+          moveCard(active.id as string, overCardColumnId);
+        }
+        reorderCard(active.id as string, over.id as string);
+      }
+    } else if (active.data.current?.type === 'Column' && over.data.current?.type === 'Column') {
+      if (active.id !== over.id) {
+        reorderColumn(active.id as string, over.id as string);
+      }
+    }
+  };
+
+  const expediteCards = board.cards.filter(c => c.type === 'Expedite');
+  const regularCards = board.cards.filter(c => c.type !== 'Expedite');
+
+  return (
+    <DndContext sensors={sensors} collisionDetection={closestCorners} onDragEnd={handleDragEnd}>
+      <div className="board-wrapper">
+        
+        {/* Horizontal Swimlane for Expedite */}
+        <div className={`swimlane-container ${expediteCards.length === 0 ? 'empty' : ''}`}>
+          <div className="swimlane-header" style={{ justifyContent: 'space-between' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              {t.expediteLane}
+            </div>
+            <button 
+              className="btn btn-ghost" 
+              onClick={() => setIsAddingExpedite(true)}
+              style={{ padding: '4px 8px', fontSize: '0.8rem' }}
+            >
+              <Plus size={16} /> {t.addExpediteCard}
+            </button>
+          </div>
+          <div className="swimlane-body">
+            {expediteCards.length > 0 ? (
+              expediteCards.map(card => (
+                <div key={card.id} style={{ minWidth: '300px' }}>
+                  <KanbanCard card={card} />
+                </div>
+              ))
+            ) : (
+              <div style={{ padding: '8px', color: 'var(--text-secondary)', fontSize: '0.8rem', fontStyle: 'italic' }}>
+                {t.emptyExpediteLane}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {isAddingExpedite && (
+          <NewCardModal 
+            columnId={board.columns[0]?.id || ''} 
+            onClose={() => setIsAddingExpedite(false)} 
+          />
+        )}
+
+        <div className="board-scroll-area">
+          <SortableContext items={board.columns.map(c => c.id)} strategy={horizontalListSortingStrategy}>
+            {board.columns.map(col => (
+              <KanbanColumn 
+                key={col.id} 
+                column={col} 
+                cards={regularCards.filter(c => c.columnId === col.id)} 
+              />
+            ))}
+          </SortableContext>
+
+          {/* Add New Column Button */}
+          <div style={{ minWidth: 'var(--column-width)', padding: '0 8px' }}>
+            <button 
+              className="btn btn-ghost" 
+              onClick={() => {
+                const title = prompt('Enter new column name:');
+                if (title) addColumn(title);
+              }}
+              style={{ width: '100%', height: '50px', border: '1px dashed var(--border-color)', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px' }}
+            >
+              <Plus size={20} /> Add Column
+            </button>
+          </div>
+        </div>
+      </div>
+    </DndContext>
+  );
+};
