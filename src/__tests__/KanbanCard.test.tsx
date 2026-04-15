@@ -3,7 +3,6 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { KanbanCard } from '../components/Cards/KanbanCard';
 import { KanbanProvider } from '../KanbanContext';
 import { initialMockData } from '../mockData';
-import React from 'react';
 
 // Mock dnd-kit since it doesn't work well in jsdom/vitest without complex setup
 vi.mock('@dnd-kit/sortable', () => ({
@@ -48,7 +47,7 @@ describe('KanbanCard', () => {
 
     // Look for the button with the pen icon (Edit2)
     const editBtn = screen.getByRole('button', {
-      name: (content, element) => element?.querySelector('.lucide-pen') !== null
+      name: (_, element) => element?.querySelector('.lucide-pen') !== null
     });
 
     fireEvent.click(editBtn);

@@ -1,7 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { KanbanProvider, useKanban } from '../KanbanContext';
-import React from 'react';
 
 const wrapper = ({ children }: { children: React.ReactNode }) => (
   <KanbanProvider>{children}</KanbanProvider>
@@ -52,9 +51,8 @@ describe('KanbanContext', () => {
         title: 'New Task',
         description: 'Test Description',
         columnId: result.current.board.columns[0].id,
-        priority: 'Medium',
+        type: 'Feature',
         assignees: [],
-        tags: []
       });
     });
 

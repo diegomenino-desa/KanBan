@@ -2,17 +2,18 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { SettingsModal } from '../components/Settings/SettingsModal';
 import { KanbanProvider } from '../KanbanContext';
-import React from 'react';
 
 describe('SettingsModal', () => {
   beforeEach(() => {
     // Mock URL.createObjectURL and URL.revokeObjectURL
-    global.URL.createObjectURL = vi.fn();
-    global.URL.revokeObjectURL = vi.fn();
+    vi.stubGlobal('URL', {
+      createObjectURL: vi.fn(),
+      revokeObjectURL: vi.fn(),
+    });
     // Mock window.confirm
-    global.window.confirm = vi.fn(() => true);
+    vi.stubGlobal('confirm', vi.fn(() => true));
     // Mock window.alert
-    global.window.alert = vi.fn();
+    vi.stubGlobal('alert', vi.fn());
   });
 
   it('renders correctly', () => {
@@ -55,7 +56,7 @@ describe('SettingsModal', () => {
     const exportButton = screen.getByText('Export Boards (JSON)');
     fireEvent.click(exportButton);
 
-    expect(global.URL.createObjectURL).toHaveBeenCalled();
+    expect(window.URL.createObjectURL).toHaveBeenCalled();
     expect(linkClickSpy).toHaveBeenCalled();
 
     linkClickSpy.mockRestore();

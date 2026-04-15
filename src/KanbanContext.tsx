@@ -1,4 +1,5 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
+import type { ReactNode } from 'react';
 import type { BoardData, KanbanCard, KanbanColumn, User } from './types';
 import { initialMockData } from './mockData';
 import { v4 as uuidv4 } from 'uuid';
@@ -15,7 +16,7 @@ interface KanbanContextProps {
   currentUser: User;
   moveCard: (cardId: string, toColumnId: string) => void;
   reorderCard: (activeId: string, overId: string) => void;
-  addCard: (card: Omit<KanbanCard, 'id' | 'createdAt' | 'enteredColumnAt'>) => void;
+  addCard: (card: Omit<KanbanCard, 'id' | 'createdAt' | 'enteredColumnAt' | 'comments'>) => void;
   updateColumn: (columnId: string, updates: Partial<KanbanColumn>) => void;
   addColumn: (title: string) => void;
   removeColumn: (columnId: string) => void;
