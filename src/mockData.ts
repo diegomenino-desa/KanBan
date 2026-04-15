@@ -24,6 +24,7 @@ export const initialMockData: BoardData = {
       assignees: ['u1'],
       createdAt: Date.now() - 86400000 * 5,
       enteredColumnAt: Date.now() - 86400000 * 2,
+      comments: [],
     },
     {
       id: uuidv4(),
@@ -33,6 +34,7 @@ export const initialMockData: BoardData = {
       assignees: ['u2'],
       createdAt: Date.now() - 3600000,
       enteredColumnAt: Date.now() - 3600000,
+      comments: [],
     },
     {
       id: uuidv4(),
@@ -42,6 +44,7 @@ export const initialMockData: BoardData = {
       assignees: ['u1', 'u3'],
       createdAt: Date.now() - 86400000 * 10,
       enteredColumnAt: Date.now() - 86400000 * 4,
+      comments: [],
     },
     {
       id: uuidv4(),
@@ -51,6 +54,7 @@ export const initialMockData: BoardData = {
       assignees: [],
       createdAt: Date.now() - 86400000,
       enteredColumnAt: Date.now() - 86400000,
+      comments: [],
     }
   ]
 };

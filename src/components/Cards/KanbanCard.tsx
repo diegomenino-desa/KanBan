@@ -3,7 +3,7 @@ import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import type { KanbanCard as KanbanCardType, CardType } from '../../types';
 import { useKanban } from '../../KanbanContext';
-import { Clock, AlertCircle, Edit2, Trash2, Check, X as XIcon, GripVertical, MessageSquare, Calendar, Send } from 'lucide-react';
+import { Clock, Edit2, Trash2, Check, X as XIcon, MessageSquare, Send } from 'lucide-react';
 import { v4 as uuidv4 } from 'uuid';
 
 interface Props {
@@ -17,8 +17,6 @@ export const KanbanCard: React.FC<Props> = ({ card }) => {
   const [editDescription, setEditDescription] = useState(card.description || '');
   const [editType, setEditType] = useState<CardType>(card.type);
   const [editAssignees, setEditAssignees] = useState<string[]>(card.assignees);
-  const [searchMember, setSearchMember] = useState('');
-  const [showSuggestions, setShowSuggestions] = useState(false);
   const [editDueDate, setEditDueDate] = useState(card.dueDate || '');
   const [commentText, setCommentText] = useState('');
 

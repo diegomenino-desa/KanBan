@@ -50,7 +50,7 @@ export const SettingsModal: React.FC<Props> = ({ onClose }) => {
         } else {
           alert('Invalid format. File should be a list of boards.');
         }
-      } catch (err) {
+      } catch {
         alert('Error parsing JSON file.');
       }
     };
