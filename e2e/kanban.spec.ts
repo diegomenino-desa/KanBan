@@ -2,24 +2,26 @@ import { test, expect } from '@playwright/test';
 
 test.describe('Kanban Board E2E', () => {
   test.beforeEach(async ({ page }) => {
+    // In CI we use baseURL: http://localhost:8101
+    // Locally for debugging it might be 5173 but I'll trust the config
     await page.goto('/');
   });
 
   test('should load the kanban board', async ({ page }) => {
-    await expect(page).toHaveTitle(/Kanban/i);
-    await expect(page.getByText(/Elite Teams/i)).toBeVisible();
+    await expect(page).toHaveTitle(/kanbanboard/i);
+    await expect(page.getByText('KanbanBoard')).toBeVisible();
   });
 
   test('should allow creating a new task', async ({ page }) => {
-    // Find "Add Card" button in the first column
-    const addCardBtn = page.getByRole('button', { name: /Add Card/i }).first();
+    // Find "Add New Card" button in the first column (To Do)
+    const addCardBtn = page.getByRole('button', { name: /Add New Card/i }).first();
     await addCardBtn.click();
 
     // Fill in task details
-    await page.getByPlaceholder(/Task Title/i).fill('E2E Test Task');
-    await page.getByPlaceholder(/Task Description/i).fill('Created by Playwright');
+    await page.getByPlaceholder(/Card Title/i).fill('E2E Test Task');
+    await page.getByPlaceholder(/Add detailed description/i).fill('Created by Playwright');
 
-    // Click Create
+    // Click Create Task
     await page.getByRole('button', { name: /Create Task/i }).click();
 
     // Verify task appears
@@ -27,8 +29,7 @@ test.describe('Kanban Board E2E', () => {
   });
 
   test('should switch theme', async ({ page }) => {
-    // Let's try to find it by text if it has any, or by icon
-    const settingsButton = page.locator('button:has(svg.lucide-settings), button:has-text("Settings")').first();
+    const settingsButton = page.getByRole('button', { name: /Settings/i });
     await settingsButton.click();
 
     const lightBtn = page.getByRole('button', { name: /Light/i });
@@ -41,8 +42,13 @@ test.describe('Kanban Board E2E', () => {
     const addColumnBtn = page.getByRole('button', { name: /Add Column/i });
     await addColumnBtn.click();
 
-    await page.getByPlaceholder(/Column Name/i).fill('New E2E Column');
-    await page.keyboard.press('Enter');
+    // The app uses prompt() for adding a column in some places or a specific button
+    // Looking at the code for "Add Column" button:
+    // onClick={() => { const title = prompt('Enter new column name:'); if (title) addColumn(title); }}
+
+    // Handling dialog
+    page.once('dialog', dialog => dialog.accept('New E2E Column'));
+    await addColumnBtn.click();
 
     await expect(page.getByText('New E2E Column')).toBeVisible();
   });

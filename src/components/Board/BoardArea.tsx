@@ -11,7 +11,7 @@ import { translations } from '../../i18n';
 import { NewCardModal } from '../Cards/NewCardModal';
 
 export const BoardArea: React.FC = () => {
-  const { board, moveCard, reorderColumn, addColumn, reorderCard, addCard, lang } = useKanban();
+  const { board, moveCard, reorderColumn, addColumn, reorderCard, lang } = useKanban();
   const t = translations[lang];
   const [isAddingExpedite, setIsAddingExpedite] = useState(false);
 

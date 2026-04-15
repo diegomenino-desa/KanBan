@@ -3,7 +3,7 @@ import { useSortable, SortableContext, verticalListSortingStrategy } from '@dnd-
 import { CSS } from '@dnd-kit/utilities';
 import type { KanbanColumn as KanbanColumnType, KanbanCard as KanbanCardType } from '../../types';
 import { KanbanCard } from '../Cards/KanbanCard';
-import { Plus, Info, Edit2, Check, X as XIcon, Trash2, GripHorizontal, MoreVertical } from 'lucide-react';
+import { Plus, Check, X as XIcon, Trash2, MoreVertical } from 'lucide-react';
 import { NewCardModal } from '../Cards/NewCardModal';
 import { useKanban } from '../../KanbanContext';
 
@@ -13,7 +13,7 @@ interface Props {
 }
 
 export const KanbanColumn: React.FC<Props> = ({ column, cards }) => {
-  const { updateColumn, removeColumn, addCard } = useKanban();
+  const { updateColumn, removeColumn } = useKanban();
   const [isEditing, setIsEditing] = useState(false);
   const [editTitle, setEditTitle] = useState(column.title);
   const [editWipLimit, setEditWipLimit] = useState(column.wipLimit);

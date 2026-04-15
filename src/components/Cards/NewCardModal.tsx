@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useKanban } from '../../KanbanContext';
 import type { CardType } from '../../types';
-import { X, Calendar, Flag, Users, MessageSquare, Plus } from 'lucide-react';
+import { X, Calendar, Flag, Users } from 'lucide-react';
 
 interface Props {
   columnId: string;
@@ -9,7 +9,7 @@ interface Props {
 }
 
 export const NewCardModal: React.FC<Props> = ({ columnId, onClose }) => {
-  const { addCard, board, theme } = useKanban();
+  const { addCard, board } = useKanban();
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [type, setType] = useState<CardType>('Feature');

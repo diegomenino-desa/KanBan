@@ -23,7 +23,7 @@ const mockThroughputData = [
 ];
 
 export const Dashboard: React.FC<Props> = ({ onClose }) => {
-  const { board } = useKanban();
+  useKanban();
 
   return (
     <div className="modal-backdrop" onClick={onClose}>
