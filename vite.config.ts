@@ -13,8 +13,9 @@ export default defineConfig({
     exclude: ['**/node_modules/**', '**/dist/**', '**/e2e/**'],
   },
   server: {
-    host: true,
+    host: '0.0.0.0',
     port: 5173,
+    strictPort: true,
     watch: {
       usePolling: true,
     },
@@ -24,3 +25,4 @@ export default defineConfig({
     allowedHosts: true,
   },
 })
+

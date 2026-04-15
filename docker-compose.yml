@@ -3,7 +3,7 @@ services:
     container_name: kanban-app
     build: .
     ports:
-      - "8101:5173"
+      - "8102:5173"
     environment:
       - NODE_ENV=development
     restart: always
