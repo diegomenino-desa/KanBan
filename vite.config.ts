@@ -13,5 +13,6 @@ export default defineConfig({
     hmr: {
       clientPort: 8101,
     },
+    allowedHosts: true,
   },
 })
