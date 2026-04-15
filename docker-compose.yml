@@ -1,6 +1,6 @@
 services:
-  kanban-board:
-    container_name: kanban-app-v1-1
+  kanban:
+    container_name: kanban-app
     build: .
     ports:
       - "8101:5173"
