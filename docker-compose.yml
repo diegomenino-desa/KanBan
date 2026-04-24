@@ -3,7 +3,7 @@ services:
     container_name: kanban-app
     build: .
     ports:
-      - "8101:5173"
+      - "8102:5173"
     environment:
       - NODE_ENV=development
       - AUTH_SERVICE_URL=http://auth:4000
@@ -26,7 +26,7 @@ services:
       - PORT=4000
       - NODE_ENV=development
       - SESSION_SECRET=${SESSION_SECRET:-dev-secret-change-me-change-me-change-me}
-      - APP_BASE_URL=http://localhost:8101
+      - APP_BASE_URL=http://localhost:8102
       # LDAP (on-prem AD)
       #- LDAP_URL=${LDAP_URL:-ldaps://dc.corp.example:636}
       #- LDAP_BIND_DN_TEMPLATE=${LDAP_BIND_DN_TEMPLATE:-{{username}}@corp.example}
