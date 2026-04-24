@@ -22,7 +22,7 @@ services:
       - "4000:4000"
     environment:
       # Copy values from server/.env.example and override here for your environment.
-      - AUTH_MODE=ldap
+      - AUTH_MODE=local
       - PORT=4000
       - NODE_ENV=development
       - SESSION_SECRET=${SESSION_SECRET:-dev-secret-change-me-change-me-change-me}
@@ -31,20 +31,13 @@ services:
       #- LDAP_URL=${LDAP_URL:-ldaps://dc.corp.example:636}
       #- LDAP_BIND_DN_TEMPLATE=${LDAP_BIND_DN_TEMPLATE:-{{username}}@corp.example}
       #- LDAP_SEARCH_BASE=${LDAP_SEARCH_BASE:-dc=corp,dc=example}
-      
-      #- LDAP_URL=${LDAP_URL:-ldap://ldap.forumsys.com:389}
-      #- LDAP_BIND_DN_TEMPLATE=${LDAP_BIND_DN_TEMPLATE:-uid={{username}},dc=example,dc=com}
-      #- LDAP_SEARCH_BASE=${LDAP_SEARCH_BASE:-dc=example,dc=com}
-      #- LDAP_SEARCH_FILTER=${LDAP_SEARCH_FILTER:-(uid={{username}})}
-      #- LDAP_DEFAULT_ROLE=${LDAP_DEFAULT_ROLE:-Admin}
 
-      - LDAP_URL=ldap://ldap.forumsys.com:389
-      - LDAP_BIND_DN_TEMPLATE=uid={{username}},dc=example,dc=com
-      - LDAP_SEARCH_BASE=dc=example,dc=com
-      - LDAP_SEARCH_FILTER=(uid={{username}})
-      - LDAP_DEFAULT_ROLE=Admin
-
-
+      # Example with forumsys public LDAP server
+      #- LDAP_URL=ldap://ldap.forumsys.com:389
+      #- LDAP_BIND_DN_TEMPLATE=uid={{username}},dc=example,dc=com
+      #- LDAP_SEARCH_BASE=dc=example,dc=com
+      #- LDAP_SEARCH_FILTER=(uid={{username}})
+      #- LDAP_DEFAULT_ROLE=Admin
 
       # OIDC (Entra ID) — uncomment AUTH_MODE=oidc above and fill these:
       # - OIDC_TENANT_ID=${OIDC_TENANT_ID}
