@@ -5,7 +5,7 @@ test.describe('Kanban Board E2E', () => {
     await page.goto('/');
 
     // If we are on the login page, perform login
-    if (await page.getByText(/Sign in/i).isVisible()) {
+    if (await page.getByRole('heading', { name: /Sign in/i }).isVisible()) {
       // Use credentials that match the default LDAP setup in docker-compose.yml
       // or common local bootstrap credentials.
       // Based on docker-compose.yml, it's currently using local auth with bootstrap.
