@@ -1,9 +1,10 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
-import { KanbanProvider, useKanban } from '../KanbanContext';
+import { useKanban } from '../KanbanContext';
+import { TestProviders } from '../testUtils/TestProviders';
 
 const wrapper = ({ children }: { children: React.ReactNode }) => (
-  <KanbanProvider>{children}</KanbanProvider>
+  <TestProviders>{children}</TestProviders>
 );
 
 describe('KanbanContext', () => {
@@ -16,7 +17,15 @@ describe('KanbanContext', () => {
     const { result } = renderHook(() => useKanban(), { wrapper });
     expect(result.current.boards).toHaveLength(1);
     expect(result.current.board).toBeDefined();
-    expect(result.current.theme).toBe('dark');
+    expect(result.current.theme).toBe('light');
+  });
+
+  it('auto-provisions the authenticated user into the active board', () => {
+    const { result } = renderHook(() => useKanban(), { wrapper });
+    const self = result.current.board.users.find(u => u.id === 'test-user-id');
+    expect(self).toBeDefined();
+    expect(self?.name).toBe('Test User');
+    expect(result.current.currentUser.id).toBe('test-user-id');
   });
 
   it('should add a new board', () => {
@@ -76,10 +85,10 @@ describe('KanbanContext', () => {
     const { result } = renderHook(() => useKanban(), { wrapper });
 
     act(() => {
-      result.current.setTheme('light');
+      result.current.setTheme('dark');
     });
 
-    expect(result.current.theme).toBe('light');
-    expect(localStorage.getItem('kanban-theme')).toBe('light');
+    expect(result.current.theme).toBe('dark');
+    expect(localStorage.getItem('kanban-theme')).toBe('dark');
   });
 });

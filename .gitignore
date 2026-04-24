@@ -26,3 +26,8 @@ dist-ssr
 # Playwright
 /playwright-report/
 /test-results/
+
+# Local auth store — contains bcrypt password hashes, never check in
+/server/data/users.json
+/server/data/users.json.*.tmp
+/server/.env

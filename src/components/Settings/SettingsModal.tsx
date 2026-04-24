@@ -59,11 +59,11 @@ export const SettingsModal: React.FC<Props> = ({ onClose }) => {
 
   return (
     <div className="modal-backdrop" onClick={onClose}>
-      <div className="settings-modal glass-panel" onClick={e => e.stopPropagation()} style={{ width: '600px', maxWidth: '95%', borderRadius: '32px', padding: '48px', display: 'flex', flexDirection: 'column', gap: '24px', maxHeight: '90vh', overflowY: 'auto' }}>
+      <div className="settings-modal glass-panel" onClick={e => e.stopPropagation()} style={{ width: '580px', maxWidth: '95%', borderRadius: '20px', padding: '40px', display: 'flex', flexDirection: 'column', gap: '20px', maxHeight: '90vh', overflowY: 'auto', background: 'var(--canvas)', border: '1px solid var(--hairline)', boxShadow: 'rgba(0,0,0,0.02) 0 0 0 1px, rgba(0,0,0,0.06) 0 4px 12px 0, rgba(0,0,0,0.16) 0 12px 32px 0' }}>
         
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <h2 style={{ fontSize: '1.8rem' }}>{t.settings}</h2>
-          <button className="btn btn-ghost" onClick={onClose} style={{ borderRadius: '50%', width: '48px', height: '48px' }}><X size={24} /></button>
+          <button className="btn-icon" onClick={onClose}><X size={16} /></button>
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
@@ -72,13 +72,13 @@ export const SettingsModal: React.FC<Props> = ({ onClose }) => {
             {/* Language Toggle */}
             <div className="kanban-card" style={{ display: 'flex', flexDirection: 'column', gap: '12px', padding: '20px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <Globe size={18} color="var(--accent-primary)" />
+                <Globe size={18} color="var(--rausch)" />
                 <span style={{ fontWeight: 600, fontSize: '0.9rem' }}>{t.language}</span>
               </div>
               <select 
                 value={lang} 
                 onChange={(e) => setLang(e.target.value as 'en' | 'es')}
-                style={{ background: 'var(--bg-board)', border: '1px solid var(--border-color)', color: 'var(--text-primary)', padding: '10px', borderRadius: '12px', fontSize: '0.9rem', outline: 'none' }}
+                style={{ background: 'var(--soft-cloud)', border: '1px solid var(--hairline)', color: 'var(--ink)', padding: '10px', borderRadius: '12px', fontSize: '0.9rem', outline: 'none' }}
               >
                 <option value="en">English</option>
                 <option value="es">Español</option>
@@ -88,7 +88,7 @@ export const SettingsModal: React.FC<Props> = ({ onClose }) => {
             {/* Theme Toggle */}
             <div className="kanban-card" style={{ display: 'flex', flexDirection: 'column', gap: '12px', padding: '20px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                {theme === 'dark' ? <Moon size={18} color="var(--accent-primary)" /> : <Sun size={18} color="var(--color-warning)" />}
+                {theme === 'dark' ? <Moon size={18} color="var(--rausch)" /> : <Sun size={18} color="var(--color-warning)" />}
                 <span style={{ fontWeight: 600, fontSize: '0.9rem' }}>{t.theme}</span>
               </div>
               <div style={{ display: 'flex', gap: '8px' }}>
@@ -113,25 +113,25 @@ export const SettingsModal: React.FC<Props> = ({ onClose }) => {
           {/* Manage Team */}
           <div className="kanban-card" style={{ padding: '24px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
-              <UserPlus size={18} color="var(--accent-primary)" />
+              <UserPlus size={18} color="var(--rausch)" />
               <span style={{ fontWeight: 600 }}>{t.manageTeam}</span>
             </div>
             
-            <form onSubmit={handleAddUser} style={{ display: 'flex', gap: '8px', marginBottom: '16px', background: 'var(--bg-app)', padding: '8px', borderRadius: '16px', border: '1px solid var(--border-color)' }}>
+            <form onSubmit={handleAddUser} style={{ display: 'flex', gap: '8px', marginBottom: '16px', background: 'var(--soft-cloud)', padding: '8px', borderRadius: '16px', border: '1px solid var(--hairline)' }}>
               <input 
                 type="text" 
                 value={newUserName}
                 onChange={e => setNewUserName(e.target.value)}
                 placeholder={t.addNewMember}
-                style={{ flex: 1, background: 'transparent', border: 'none', color: 'var(--text-primary)', padding: '4px 8px', outline: 'none', fontSize: '0.9rem' }}
+                style={{ flex: 1, background: 'transparent', border: 'none', color: 'var(--ink)', padding: '4px 8px', outline: 'none', fontSize: '0.9rem' }}
               />
               <button type="submit" className="btn btn-primary" style={{ padding: '8px 16px', borderRadius: '10px' }}>Add</button>
             </form>
 
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
               {board.users.map(u => (
-                <div key={u.id} style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'var(--bg-board)', padding: '6px 12px', borderRadius: '12px', fontSize: '0.85rem', border: '1px solid var(--border-color)' }}>
-                  <div style={{ width: '20px', height: '20px', borderRadius: '50%', background: 'var(--accent-primary)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.7rem', fontWeight: 'bold' }}>
+                <div key={u.id} style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'var(--soft-cloud)', padding: '6px 12px', borderRadius: '12px', fontSize: '0.85rem', border: '1px solid var(--hairline)' }}>
+                  <div style={{ width: '20px', height: '20px', borderRadius: '50%', background: 'var(--rausch)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.7rem', fontWeight: 'bold' }}>
                     {u.initials}
                   </div>
                   {u.name}
@@ -153,9 +153,9 @@ export const SettingsModal: React.FC<Props> = ({ onClose }) => {
           </div>
 
           {/* Backup & Recovery */}
-          <div className="kanban-card" style={{ padding: '24px', border: '1px solid var(--color-warning)', background: 'rgba(245, 158, 11, 0.03)' }}>
+          <div className="kanban-card" style={{ padding: '24px', border: '1px solid var(--hairline)' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '20px' }}>
-              <Download size={18} color="var(--color-warning)" />
+              <Download size={18} color="var(--ash)" />
               <span style={{ fontWeight: 600 }}>{t.backupRestore}</span>
             </div>
             
@@ -163,7 +163,7 @@ export const SettingsModal: React.FC<Props> = ({ onClose }) => {
               <button 
                 className="btn btn-ghost" 
                 onClick={handleExport}
-                style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', padding: '14px', borderRadius: '14px', border: '1px dashed var(--border-color)' }}
+                style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', padding: '14px', borderRadius: '14px', border: '1px dashed var(--hairline)' }}
               >
                 <Download size={16} />
                 {t.exportData}
@@ -178,7 +178,7 @@ export const SettingsModal: React.FC<Props> = ({ onClose }) => {
                 />
                 <button 
                   className="btn btn-ghost" 
-                  style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', padding: '14px', borderRadius: '14px', border: '1px dashed var(--border-color)', color: 'var(--color-danger)' }}
+                  style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', padding: '14px', borderRadius: '14px', border: '1px dashed var(--hairline)', color: 'var(--color-danger)' }}
                 >
                   <Upload size={16} />
                   {t.importData}
@@ -186,7 +186,7 @@ export const SettingsModal: React.FC<Props> = ({ onClose }) => {
               </div>
             </div>
             
-            <div style={{ marginTop: '16px', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.75rem', color: 'var(--text-secondary)', opacity: 0.8 }}>
+            <div style={{ marginTop: '16px', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.75rem', color: 'var(--ash)', opacity: 0.8 }}>
               <AlertTriangle size={14} />
               {t.restoreWarning}
             </div>

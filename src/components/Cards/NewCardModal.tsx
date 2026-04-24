@@ -41,192 +41,111 @@ export const NewCardModal: React.FC<Props> = ({ columnId, onClose }) => {
 
   return (
     <div className="modal-backdrop" onClick={onClose}>
-      <div className="glass-panel modal-content-anim" onClick={e => e.stopPropagation()} style={{ 
-        width: '720px', 
-        maxWidth: '95%', 
-        borderRadius: '24px', 
-        display: 'flex', 
+      <div className="glass-panel modal-content-anim" onClick={e => e.stopPropagation()} style={{
+        width: '680px',
+        maxWidth: '95%',
+        borderRadius: '20px',
+        display: 'flex',
         flexDirection: 'column',
-        boxShadow: '0 30px 60px -12px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.1)',
+        boxShadow: 'rgba(0,0,0,0.02) 0 0 0 1px, rgba(0,0,0,0.06) 0 4px 12px 0, rgba(0,0,0,0.16) 0 12px 32px 0',
         overflow: 'hidden',
-        background: 'var(--bg-board)',
-        border: '1px solid var(--border-color)'
+        background: 'var(--canvas)',
+        border: '1px solid var(--hairline)',
       }}>
         
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column' }}>
           <div style={{ padding: '32px 40px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-              <input 
+              <input
                 autoFocus
                 type="text"
                 value={title}
                 onChange={e => setTitle(e.target.value)}
-                placeholder="Card Title"
-                style={{ 
-                  width: '100%', 
-                  fontSize: '1.8rem', 
-                  fontWeight: 700, 
-                  border: 'none', 
-                  background: 'transparent', 
-                  color: 'var(--text-primary)', 
-                  outline: 'none',
-                  padding: '0'
-                }}
+                placeholder="Card title"
+                style={{ width: '100%', fontSize: '1.6rem', fontWeight: 700, border: 'none', background: 'transparent', color: 'var(--ink)', outline: 'none', padding: '0', fontFamily: 'inherit', letterSpacing: '-0.02em' }}
                 required
               />
-              <button type="button" className="btn btn-ghost" onClick={onClose} style={{ padding: '8px', marginTop: '-8px', marginRight: '-12px' }}>
-                <X size={20} />
+              <button type="button" className="btn-icon" onClick={onClose} style={{ marginTop: '-4px', marginRight: '-8px', flexShrink: 0 }}>
+                <X size={16} />
               </button>
             </div>
             
-            <textarea 
+            <textarea
               value={description}
               onChange={e => setDescription(e.target.value)}
-              placeholder="Add detailed description..."
-              rows={4}
-              style={{ 
-                width: '100%', 
-                fontSize: '1rem', 
-                border: 'none', 
-                background: 'transparent', 
-                color: 'var(--text-secondary)', 
-                outline: 'none', 
-                resize: 'none', 
-                lineHeight: 1.6,
-                padding: '0'
-              }}
+              placeholder="Add a description…"
+              rows={3}
+              style={{ width: '100%', fontSize: '0.95rem', border: 'none', background: 'transparent', color: 'var(--ash)', outline: 'none', resize: 'none', lineHeight: 1.6, padding: '0', fontFamily: 'inherit', fontWeight: 500 }}
             />
           </div>
 
-          {/* Properties Section */}
-          <div style={{ 
-            padding: '24px 40px', 
-            borderTop: '1px solid var(--border-color)', 
-            background: 'rgba(255, 255, 255, 0.02)',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '24px'
-          }}>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '24px' }}>
-              
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-secondary)' }}>
-                  <Flag size={14} /> CATEGORY
+          {/* Properties */}
+          <div style={{ padding: '20px 32px', borderTop: '1px solid var(--hairline)', background: 'var(--soft-cloud)', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '20px' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.78rem', fontWeight: 600, color: 'var(--ash)' }}>
+                  <Flag size={12} /> CATEGORY
                 </div>
-                <select 
+                <select
                   value={type}
                   onChange={e => setType(e.target.value as CardType)}
-                  style={{ 
-                    background: 'var(--bg-app)', 
-                    border: '1px solid var(--border-color)', 
-                    color: 'var(--text-primary)', 
-                    padding: '10px 14px', 
-                    borderRadius: '10px', 
-                    fontSize: '0.9rem',
-                    cursor: 'pointer'
-                  }}
+                  style={{ background: 'var(--canvas)', border: '1px solid var(--hairline)', color: 'var(--ink)', padding: '10px 12px', borderRadius: 'var(--radius-sm)', fontSize: '0.88rem', fontFamily: 'inherit', fontWeight: 500, cursor: 'pointer' }}
                 >
                   {cardTypes.map(t => <option key={t} value={t}>{t}</option>)}
                 </select>
               </div>
-
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-secondary)' }}>
-                  <Calendar size={14} /> DUE DATE
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.78rem', fontWeight: 600, color: 'var(--ash)' }}>
+                  <Calendar size={12} /> DUE DATE
                 </div>
-                <input 
+                <input
                   type="date"
                   value={dueDate}
                   onChange={e => setDueDate(e.target.value)}
-                  style={{ 
-                    background: 'var(--bg-app)', 
-                    border: '1px solid var(--border-color)', 
-                    color: 'var(--text-primary)', 
-                    padding: '10px 14px', 
-                    borderRadius: '10px', 
-                    fontSize: '0.9rem',
-                    cursor: 'pointer'
-                  }}
+                  style={{ background: 'var(--canvas)', border: '1px solid var(--hairline)', color: 'var(--ink)', padding: '10px 12px', borderRadius: 'var(--radius-sm)', fontSize: '0.88rem', fontFamily: 'inherit', fontWeight: 500, cursor: 'pointer' }}
                 />
               </div>
             </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-secondary)' }}>
-                <Users size={14} /> TEAM ASSIGNEES
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.78rem', fontWeight: 600, color: 'var(--ash)' }}>
+                <Users size={12} /> ASSIGNEES
               </div>
-              
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '4px' }}>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
                 {selectedAssignees.map(aId => {
                   const user = board.users.find(u => u.id === aId);
                   if (!user) return null;
                   return (
-                    <div key={user.id} style={{ background: 'var(--accent-primary)', color: 'white', padding: '6px 12px', borderRadius: '20px', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.85rem', fontWeight: 500 }}>
-                      <div style={{ width: '20px', height: '20px', borderRadius: '50%', background: 'rgba(0,0,0,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.65rem' }}>{user.initials}</div>
+                    <div key={user.id} style={{ background: 'var(--rausch)', color: '#fff', padding: '5px 12px', borderRadius: '20px', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.82rem', fontWeight: 600 }}>
                       {user.name}
-                      <button type="button" onClick={() => toggleAssignee(user.id)} style={{ background: 'none', border: 'none', color: 'white', cursor: 'pointer', padding: 0, display: 'flex', opacity: 0.8 }}>
-                        <X size={14} />
+                      <button type="button" onClick={() => toggleAssignee(user.id)} style={{ background: 'none', border: 'none', color: '#fff', cursor: 'pointer', padding: 0, display: 'flex', opacity: 0.8 }}>
+                        <X size={12} />
                       </button>
                     </div>
                   );
                 })}
               </div>
-
-              <select 
+              <select
                 onChange={(e) => {
                   const val = e.target.value;
-                  if (val && !selectedAssignees.includes(val)) {
-                    setSelectedAssignees([...selectedAssignees, val]);
-                  }
-                  e.target.value = "";
+                  if (val && !selectedAssignees.includes(val)) setSelectedAssignees([...selectedAssignees, val]);
+                  e.target.value = '';
                 }}
-                style={{ 
-                  width: '100%', 
-                  background: 'var(--bg-app)', 
-                  border: '1px solid var(--border-color)', 
-                  color: 'var(--text-primary)', 
-                  padding: '12px', 
-                  borderRadius: '12px', 
-                  fontSize: '0.9rem',
-                  outline: 'none',
-                  cursor: 'pointer'
-                }}
+                style={{ background: 'var(--canvas)', border: '1px solid var(--hairline)', color: 'var(--ash)', padding: '10px 12px', borderRadius: 'var(--radius-sm)', fontSize: '0.88rem', fontFamily: 'inherit', fontWeight: 500, cursor: 'pointer' }}
               >
-                <option value="">+ Add team member...</option>
-                {board.users
-                  .filter(u => !selectedAssignees.includes(u.id))
-                  .map(u => (
-                    <option key={u.id} value={u.id}>{u.name}</option>
-                  ))
-                }
+                <option value="">+ Add team member…</option>
+                {board.users.filter(u => !selectedAssignees.includes(u.id)).map(u => (
+                  <option key={u.id} value={u.id}>{u.name}</option>
+                ))}
               </select>
             </div>
           </div>
 
-          {/* Footer inside form */}
-          <div style={{ 
-            padding: '24px 40px', 
-            display: 'flex', 
-            justifyContent: 'flex-end', 
-            gap: '16px',
-            background: 'rgba(0,0,0,0.05)',
-            borderTop: '1px solid var(--border-color)'
-          }}>
-            <button type="button" className="btn btn-ghost" onClick={onClose} style={{ padding: '10px 24px' }}>Discard</button>
-            <button 
-              type="submit" 
-              className="btn btn-primary" 
-              style={{ 
-                padding: '10px 32px', 
-                borderRadius: '12px', 
-                fontWeight: 600, 
-                display: 'flex', 
-                alignItems: 'center', 
-                gap: '8px',
-                boxShadow: '0 10px 20px -5px rgba(99, 102, 241, 0.4)'
-              }}
-            >
-              Create Task
+          {/* Footer */}
+          <div style={{ padding: '20px 32px', display: 'flex', justifyContent: 'flex-end', gap: '12px', borderTop: '1px solid var(--hairline)' }}>
+            <button type="button" className="btn btn-ghost" onClick={onClose}>Discard</button>
+            <button type="submit" className="btn btn-primary" style={{ padding: '10px 28px', fontWeight: 600 }}>
+              Create card
             </button>
           </div>
         </form>

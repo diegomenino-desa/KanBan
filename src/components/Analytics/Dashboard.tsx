@@ -39,14 +39,14 @@ export const Dashboard: React.FC<Props> = ({ onClose }) => {
           {/* Key Metrics */}
           <div className="kanban-card">
             <h3>Cycle Time (Average)</h3>
-            <div style={{ fontSize: '2rem', fontWeight: 'bold', color: 'var(--accent-primary)', marginTop: '8px' }}>4.2 Days</div>
-            <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>Time spent in Active columns</p>
+            <div style={{ fontSize: '2rem', fontWeight: 'bold', color: 'var(--rausch)', marginTop: '8px' }}>4.2 Days</div>
+            <p style={{ color: 'var(--ash)', fontSize: '0.85rem' }}>Time spent in Active columns</p>
           </div>
 
           <div className="kanban-card">
             <h3>Lead Time (Average)</h3>
             <div style={{ fontSize: '2rem', fontWeight: 'bold', color: 'var(--color-feature)', marginTop: '8px' }}>9.5 Days</div>
-            <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>Time from Request to Done</p>
+            <p style={{ color: 'var(--ash)', fontSize: '0.85rem' }}>Time from Request to Done</p>
           </div>
 
           {/* CFD Chart */}
@@ -54,9 +54,9 @@ export const Dashboard: React.FC<Props> = ({ onClose }) => {
             <h3 style={{ marginBottom: '16px' }}>Cumulative Flow Diagram</h3>
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={mockCfdData}>
-                <XAxis dataKey="day" stroke="var(--text-secondary)" />
-                <YAxis stroke="var(--text-secondary)" />
-                <Tooltip contentStyle={{ backgroundColor: 'var(--bg-board)', border: '1px solid var(--border-color)', borderRadius: '8px' }} />
+                <XAxis dataKey="day" stroke="var(--ash)" />
+                <YAxis stroke="var(--ash)" />
+                <Tooltip contentStyle={{ backgroundColor: 'var(--soft-cloud)', border: '1px solid var(--hairline)', borderRadius: '8px' }} />
                 <Area type="monotone" dataKey="Done" stackId="1" stroke="#10b981" fill="#10b981" fillOpacity={0.8} />
                 <Area type="monotone" dataKey="Review" stackId="1" stroke="#f59e0b" fill="#f59e0b" fillOpacity={0.6} />
                 <Area type="monotone" dataKey="In Progress" stackId="1" stroke="#3b82f6" fill="#3b82f6" fillOpacity={0.4} />
@@ -70,9 +70,9 @@ export const Dashboard: React.FC<Props> = ({ onClose }) => {
             <h3 style={{ marginBottom: '16px' }}>Throughput</h3>
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={mockThroughputData}>
-                <XAxis dataKey="week" stroke="var(--text-secondary)" />
-                <YAxis stroke="var(--text-secondary)" />
-                <Tooltip contentStyle={{ backgroundColor: 'var(--bg-board)', border: '1px solid var(--border-color)', borderRadius: '8px' }} />
+                <XAxis dataKey="week" stroke="var(--ash)" />
+                <YAxis stroke="var(--ash)" />
+                <Tooltip contentStyle={{ backgroundColor: 'var(--soft-cloud)', border: '1px solid var(--hairline)', borderRadius: '8px' }} />
                 <Bar dataKey="Features" stackId="a" fill="var(--color-feature)" />
                 <Bar dataKey="Bugs" stackId="a" fill="var(--color-bug)" />
                 <Bar dataKey="TechDebt" stackId="a" fill="var(--color-techdebt)" />
