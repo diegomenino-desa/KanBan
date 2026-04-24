@@ -1,0 +1,41 @@
+{
+  "name": "kanbanboard-auth-service",
+  "private": true,
+  "version": "2.1.0",
+  "description": "Auth proxy for KanbanBoard — dual-mode LDAP (on-prem AD) / OIDC (Entra ID)",
+  "type": "module",
+  "main": "dist/index.js",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc -p tsconfig.json",
+    "start": "node dist/index.js",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "user:add": "tsx src/cli/users.ts add",
+    "user:remove": "tsx src/cli/users.ts remove",
+    "user:list": "tsx src/cli/users.ts list",
+    "user:reset": "tsx src/cli/users.ts reset-password"
+  },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "cookie-parser": "^1.4.7",
+    "dotenv": "^16.4.5",
+    "express": "^4.21.1",
+    "express-rate-limit": "^7.4.1",
+    "express-session": "^1.18.1",
+    "ldapjs": "^3.0.7",
+    "openid-client": "^5.7.0",
+    "uuid": "^14.0.0",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/bcryptjs": "^2.4.6",
+    "@types/cookie-parser": "^1.4.7",
+    "@types/express": "^4.17.21",
+    "@types/express-session": "^1.18.0",
+    "@types/ldapjs": "^3.0.6",
+    "@types/node": "^22.8.7",
+    "@types/uuid": "^10.0.0",
+    "tsx": "^4.19.2",
+    "typescript": "~5.6.3"
+  }
+}

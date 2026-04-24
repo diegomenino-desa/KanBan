@@ -12,10 +12,10 @@
   overflow: hidden;
 }
 
-/* Kanban specific layouts */
+/* ─── Board scroll area ──────────────────────────────────── */
 .board-scroll-area {
   display: flex;
-  gap: 32px;
+  gap: 24px;
   overflow-x: auto;
   overflow-y: hidden;
   padding-bottom: 24px;
@@ -23,65 +23,69 @@
   flex: 1;
 }
 
+/* ─── Kanban Column ──────────────────────────────────────── */
 .kanban-column {
   min-width: var(--column-width);
   max-width: var(--column-width);
-  background: var(--bg-column);
-  backdrop-filter: blur(8px);
+  background: var(--canvas);
   border-radius: var(--radius-lg);
   display: flex;
   flex-direction: column;
   max-height: 100%;
-  border: 1px solid var(--border-color);
-  transition: all var(--transition-normal);
+  border: 1px solid var(--hairline);
+  transition: border-color var(--transition-fast);
 }
 
 .kanban-column.over-limit {
-  border-color: var(--color-danger);
-  box-shadow: 0 0 10px rgba(239, 68, 68, 0.2);
+  border-color: var(--error);
 }
 
 .column-header {
-  padding: 20px;
+  padding: 16px 20px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border-bottom: 1px solid var(--border-color);
+  border-bottom: 1px solid var(--hairline);
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
 }
 
 .column-title-container {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
 }
 
 .column-title {
   font-weight: 600;
   font-size: 1rem;
+  color: var(--ink);
+  letter-spacing: -0.01em;
 }
 
 .column-count {
-  background: #ffffff;
-  color: #0d1117;
+  background: var(--soft-cloud);
+  color: var(--ash);
   padding: 2px 10px;
   border-radius: 20px;
   font-size: 0.8rem;
-  font-weight: 700;
+  font-weight: 600;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 24px;
+  min-width: 28px;
+  border: 1px solid var(--hairline);
   transition: all var(--transition-fast);
 }
 
 .column-count.over-limit {
-  background: var(--color-danger);
-  color: white;
+  background: var(--error);
+  color: #ffffff;
+  border-color: var(--error);
 }
 
-/* Definition of Done Tooltip */
+/* DoD tooltip */
 .dod-badge {
-  color: var(--text-secondary);
+  color: var(--ash);
   cursor: help;
   position: relative;
 }
@@ -91,13 +95,15 @@
   top: 100%;
   right: 0;
   width: 250px;
-  background: var(--bg-card);
-  border: 1px solid var(--border-color);
-  padding: 12px;
+  background: var(--canvas);
+  border: 1px solid var(--hairline);
+  padding: 14px;
   border-radius: var(--radius-sm);
   box-shadow: var(--shadow-md);
   z-index: 10;
   font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--ash);
   opacity: 0;
   visibility: hidden;
   transition: all var(--transition-fast);
@@ -116,27 +122,26 @@
   overflow-y: auto;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 10px;
   min-height: 100px;
 }
 
-/* Kanban Card */
+/* ─── Kanban Card ────────────────────────────────────────── */
 .kanban-card {
-  background: var(--bg-card);
-  border-radius: 14px;
-  padding: 20px;
-  border: 1.5px solid #21262d; 
+  background: var(--canvas);
+  border-radius: var(--radius-md);
+  padding: 16px;
+  border: 1px solid var(--hairline);
   cursor: grab;
   position: relative;
-  transition: all var(--transition-normal);
+  transition: box-shadow var(--transition-normal), transform var(--transition-normal);
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 10px;
 }
 
 .kanban-card:hover {
-  border-color: #30363d;
-  background: #161b22;
+  box-shadow: rgba(0,0,0,0.08) 0 4px 12px;
   transform: translateY(-2px);
 }
 
@@ -152,33 +157,38 @@
   align-items: flex-start;
 }
 
+/* Type badge — chip style */
 .card-type-badge {
-  font-size: 0.75rem;
-  padding: 4px 8px;
-  border-radius: 4px;
+  font-size: 0.72rem;
+  padding: 3px 10px;
+  border-radius: var(--radius-xs);
   font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.3px;
 }
 
-/* Type variations */
-.type-feature { background: var(--bg-feature); color: var(--color-feature); border: 1px solid rgba(59, 130, 246, 0.3); }
-.type-bug { background: var(--bg-bug); color: var(--color-bug); border: 1px solid rgba(239, 68, 68, 0.3); }
-.type-expedite { background: var(--bg-expedite); color: var(--color-expedite); border: 1px solid rgba(249, 115, 22, 0.3); animation: pulse-border 2s infinite; }
-.type-techdebt { background: var(--bg-techdebt); color: var(--color-techdebt); border: 1px solid rgba(168, 85, 247, 0.3); }
-.type-spike { background: var(--bg-spike); color: var(--color-spike); border: 1px solid rgba(100, 116, 139, 0.3); }
+.type-feature  { background: var(--bg-feature);  color: var(--color-feature);  }
+.type-bug      { background: var(--bg-bug);       color: var(--color-bug);      }
+.type-expedite { background: var(--bg-expedite);  color: var(--color-expedite); }
+.type-techdebt { background: var(--bg-techdebt);  color: var(--color-techdebt); }
+.type-spike    { background: var(--bg-spike);     color: var(--color-spike);    }
+
+/* Expedite pulse on the card border, not the badge */
+.kanban-card:has(.type-expedite) {
+  border-color: rgba(255, 56, 92, 0.3);
+  animation: pulse-border 2.5s infinite;
+}
 
 @keyframes pulse-border {
-  0% { box-shadow: 0 0 0 0 rgba(249, 115, 22, 0.4); }
-  70% { box-shadow: 0 0 0 4px rgba(249, 115, 22, 0); }
-  100% { box-shadow: 0 0 0 0 rgba(249, 115, 22, 0); }
+  0%   { box-shadow: 0 0 0 0 rgba(255, 56, 92, 0.25); }
+  70%  { box-shadow: 0 0 0 5px rgba(255, 56, 92, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(255, 56, 92, 0); }
 }
 
 .card-title {
   font-size: 0.9rem;
-  font-weight: 500;
-  line-height: 1.6;
-  color: var(--text-primary);
+  font-weight: 600;
+  line-height: 1.45;
+  color: var(--ink);
   letter-spacing: -0.01em;
 }
 
@@ -186,121 +196,171 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-top: 8px;
-  padding-top: 12px;
-  border-top: 1px solid #21262d; 
+  margin-top: 4px;
+  padding-top: 10px;
+  border-top: 1px solid var(--hairline);
 }
 
 .card-footer-icons {
   display: flex;
   align-items: center;
-  gap: 12px;
-  color: var(--text-secondary);
-  font-size: 0.85rem;
+  gap: 10px;
+  color: var(--ash);
+  font-size: 0.8rem;
+  font-weight: 500;
 }
 
 .card-aging {
   display: flex;
   align-items: center;
   gap: 4px;
-  font-size: 0.75rem;
-  color: var(--text-secondary);
+  font-size: 0.78rem;
+  color: var(--ash);
+  font-weight: 500;
 }
-
-.card-aging.stale {
-  color: var(--color-warning);
-}
-.card-aging.very-stale {
-  color: var(--color-danger);
-}
+.card-aging.stale      { color: var(--color-warning); }
+.card-aging.very-stale { color: var(--color-danger); }
 
 .card-assignee {
-  width: 28px;
-  height: 28px;
+  width: 26px;
+  height: 26px;
   border-radius: 50%;
-  background: var(--accent-primary);
+  background: var(--rausch);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.7rem;
-  font-weight: 600;
-  border: 2px solid var(--bg-card);
-  color: white;
+  font-size: 0.65rem;
+  font-weight: 700;
+  border: 2px solid var(--canvas);
+  color: #ffffff;
+  margin-left: -6px;
 }
+.card-assignee:first-child { margin-left: 0; }
 
-/* Swimlane */
+/* ─── Expedite Swimlane ──────────────────────────────────── */
 .swimlane-container {
   display: flex;
   flex-direction: column;
-  margin-bottom: 24px;
-  background: rgba(249, 115, 22, 0.05); /* Expedite styling */
-  border: 1px solid rgba(249, 115, 22, 0.2);
+  margin-bottom: 20px;
+  background: rgba(255, 56, 92, 0.04);
+  border: 1px solid rgba(255, 56, 92, 0.15);
   border-radius: var(--radius-md);
   transition: all var(--transition-normal);
 }
 
 .swimlane-container.empty {
   margin-bottom: 12px;
-  background: rgba(249, 115, 22, 0.02);
+  background: transparent;
 }
 
 .swimlane-header {
-  padding: 12px 16px;
+  padding: 10px 16px;
   font-weight: 600;
-  color: var(--color-expedite);
+  font-size: 0.85rem;
+  color: var(--rausch);
   display: flex;
   align-items: center;
   gap: 8px;
-  border-bottom: 1px solid rgba(249, 115, 22, 0.2);
+  border-bottom: 1px solid rgba(255, 56, 92, 0.15);
 }
 
 .swimlane-body {
-  padding: 16px;
-  min-height: 120px;
+  padding: 12px 16px;
+  min-height: 100px;
   display: flex;
-  gap: 16px;
+  gap: 12px;
   overflow-x: auto;
   transition: all var(--transition-normal);
 }
 
 .swimlane-container.empty .swimlane-body {
-  min-height: 40px;
+  min-height: 36px;
   padding: 8px 16px;
 }
 
-/* Utilities */
+/* ─── Buttons ────────────────────────────────────────────── */
 .btn {
-  padding: 8px 16px;
+  padding: 10px 20px;
   border-radius: var(--radius-sm);
   font-weight: 500;
+  font-size: 0.9rem;
   transition: all var(--transition-fast);
   display: flex;
   align-items: center;
   gap: 8px;
+  font-family: var(--font-base);
 }
 
+/* Primary — Rausch */
 .btn-primary {
-  background: var(--accent-primary);
-  color: white;
+  background: var(--rausch);
+  color: #ffffff;
+  border-radius: var(--radius-sm);
 }
 .btn-primary:hover {
-  background: var(--accent-hover);
-  box-shadow: var(--shadow-glow);
+  background: var(--rausch-deep);
+}
+.btn-primary:active {
+  transform: scale(0.95);
+  box-shadow: 0 0 0 2px var(--ink);
 }
 
+/* Ghost */
 .btn-ghost {
   background: transparent;
-  color: var(--text-secondary);
+  color: var(--ash);
+  border-radius: var(--radius-sm);
 }
 .btn-ghost:hover {
-  background: rgba(255, 255, 255, 0.05);
-  color: var(--text-primary);
+  background: var(--soft-cloud);
+  color: var(--ink);
 }
 
+/* Circular icon button — Airbnb 50% */
+.btn-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--soft-cloud);
+  border: 1px solid var(--hairline);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--ink);
+  padding: 0;
+  transition: all var(--transition-fast);
+}
+.btn-icon:hover {
+  box-shadow: rgba(0,0,0,0.08) 0 4px 12px;
+}
+.btn-icon:active {
+  transform: scale(0.92);
+}
+
+/* ─── Form inputs ────────────────────────────────────────── */
+.airbnb-input {
+  background: var(--canvas);
+  border: 1px solid var(--hairline);
+  color: var(--ink);
+  padding: 12px 14px;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-base);
+  font-weight: 500;
+  font-size: 0.9rem;
+  width: 100%;
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+.airbnb-input:focus {
+  border-color: var(--ink);
+  box-shadow: 0 0 0 2px var(--ink);
+}
+.airbnb-input::placeholder { color: var(--stone); }
+
+/* ─── Suggestion list (autocomplete) ────────────────────── */
 .suggestion-item {
   transition: background var(--transition-fast);
+  font-weight: 500;
 }
-
 .suggestion-item:hover {
-  background: var(--bg-card);
+  background: var(--soft-cloud);
 }

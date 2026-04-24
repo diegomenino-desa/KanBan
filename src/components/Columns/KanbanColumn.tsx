@@ -62,60 +62,54 @@ export const KanbanColumn: React.FC<Props> = ({ column, cards }) => {
       <div className="column-header" style={{ position: 'relative' }}>
         {isEditing ? (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', width: '100%' }}>
-            <input 
-              type="text" 
-              value={editTitle} 
-              onChange={e => setEditTitle(e.target.value)} 
-              style={{ background: 'var(--bg-app)', border: '1px solid var(--border-color)', color: 'var(--text-primary)', padding: '4px 8px', borderRadius: '4px' }} 
-              placeholder="Column Name" 
+            <input
+              type="text"
+              value={editTitle}
+              onChange={e => setEditTitle(e.target.value)}
+              placeholder="Column Name"
+              style={{ background: 'var(--canvas)', border: '1px solid var(--hairline)', color: 'var(--ink)', padding: '8px 10px', borderRadius: 'var(--radius-sm)', fontFamily: 'inherit', fontWeight: 600, fontSize: '0.9rem', width: '100%' }}
             />
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>WIP:</span>
-              <input 
-                type="number" 
-                value={editWipLimit} 
-                onChange={e => setEditWipLimit(Number(e.target.value))} 
-                style={{ background: 'var(--bg-app)', border: '1px solid var(--border-color)', color: 'var(--text-primary)', padding: '4px 8px', width: '60px', borderRadius: '4px' }} 
+              <span style={{ fontSize: '0.8rem', color: 'var(--ash)', fontWeight: 600 }}>WIP limit:</span>
+              <input
+                type="number"
+                value={editWipLimit}
+                onChange={e => setEditWipLimit(Number(e.target.value))}
+                style={{ background: 'var(--canvas)', border: '1px solid var(--hairline)', color: 'var(--ink)', padding: '6px 8px', width: '64px', borderRadius: 'var(--radius-sm)', fontFamily: 'inherit', fontWeight: 500, fontSize: '0.88rem' }}
                 min="0"
               />
             </div>
-            <textarea 
-              value={editDod} 
-              onChange={e => setEditDod(e.target.value)} 
-              style={{ background: 'var(--bg-app)', border: '1px solid var(--border-color)', color: 'var(--text-primary)', padding: '4px 8px', borderRadius: '4px', fontSize: '0.8rem', resize: 'vertical', minHeight: '60px' }} 
+            <textarea
+              value={editDod}
+              onChange={e => setEditDod(e.target.value)}
               placeholder="Definition of Done"
+              style={{ background: 'var(--canvas)', border: '1px solid var(--hairline)', color: 'var(--ink)', padding: '8px 10px', borderRadius: 'var(--radius-sm)', fontSize: '0.82rem', resize: 'vertical', minHeight: '60px', fontFamily: 'inherit', fontWeight: 500 }}
             />
             <div style={{ display: 'flex', gap: '8px', justifyContent: 'space-between', marginTop: '4px' }}>
-              <button className="btn btn-ghost" onClick={() => removeColumn(column.id)} style={{ padding: '4px', color: 'var(--color-danger)' }} title="Delete Column"><Trash2 size={16} /></button>
+              <button className="btn btn-ghost" onClick={() => removeColumn(column.id)} style={{ padding: '6px 10px', color: 'var(--error)', fontSize: '0.82rem' }} title="Delete Column"><Trash2 size={14} /></button>
               <div style={{ display: 'flex', gap: '8px' }}>
-                <button className="btn btn-ghost" onClick={handleCancel} style={{ padding: '4px' }}><XIcon size={16} /></button>
-                <button className="btn btn-primary" onClick={handleSave} style={{ padding: '4px 8px' }}><Check size={16} /></button>
+                <button className="btn btn-ghost" onClick={handleCancel} style={{ padding: '6px 10px' }}><XIcon size={14} /></button>
+                <button className="btn btn-primary" onClick={handleSave} style={{ padding: '6px 14px', fontSize: '0.85rem' }}><Check size={14} /> Save</button>
               </div>
             </div>
           </div>
         ) : (
           <>
-            <div className="column-title-container" {...attributes} {...listeners} style={{ flex: 1, display: 'flex', alignItems: 'center', gap: '8px', cursor: 'grab' }}>
-              <span className="column-title" style={{ fontSize: '1.1rem', fontWeight: 600 }}>{column.title}</span>
+            <div className="column-title-container" {...attributes} {...listeners} style={{ flex: 1, cursor: 'grab' }}>
+              <span className="column-title">{column.title}</span>
               <span className={`column-count ${isOverLimit ? 'over-limit' : ''}`}>
                 {cards.length}
                 {column.wipLimit > 0 && (
-                  <span style={{ fontSize: '0.7em', color: 'inherit', marginLeft: '4px', opacity: 0.8 }}>
-                    / {column.wipLimit}
-                  </span>
+                  <span style={{ fontSize: '0.8em', opacity: 0.75 }}> / {column.wipLimit}</span>
                 )}
               </span>
             </div>
-            
             <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-              <button 
-                className="btn btn-ghost p-1" 
-                onClick={() => setIsAddingCard(true)}
-              >
-                <Plus size={18} />
+              <button className="btn-icon" onClick={() => setIsAddingCard(true)} title="Add card" style={{ width: '30px', height: '30px' }}>
+                <Plus size={14} />
               </button>
-              <button className="btn btn-ghost p-1" onClick={() => setIsEditing(true)}>
-                <MoreVertical size={18} />
+              <button className="btn-icon" onClick={() => setIsEditing(true)} title="Edit column" style={{ width: '30px', height: '30px' }}>
+                <MoreVertical size={14} />
               </button>
             </div>
           </>
@@ -128,12 +122,12 @@ export const KanbanColumn: React.FC<Props> = ({ column, cards }) => {
             <KanbanCard key={card.id} card={card} />
           ))}
         </SortableContext>
-        <button 
-          className="btn add-card-btn" 
+        <button
+          className="btn add-card-btn"
           onClick={() => setIsAddingCard(true)}
-          style={{ width: '100%', marginTop: '12px', padding: '12px', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px', fontSize: '0.9rem', fontWeight: 600, borderRadius: '16px' }}
+          style={{ width: '100%', padding: '10px', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '6px', fontSize: '0.85rem', fontWeight: 600 }}
         >
-          <Plus size={18} /> Add New Card
+          <Plus size={16} /> Add card
         </button>
       </div>
 

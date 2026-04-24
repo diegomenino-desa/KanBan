@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { SettingsModal } from '../components/Settings/SettingsModal';
-import { KanbanProvider } from '../KanbanContext';
+import { TestProviders } from '../testUtils/TestProviders';
 
 describe('SettingsModal', () => {
   beforeEach(() => {
@@ -18,9 +18,9 @@ describe('SettingsModal', () => {
 
   it('renders correctly', () => {
     render(
-      <KanbanProvider>
+      <TestProviders>
         <SettingsModal onClose={() => {}} />
-      </KanbanProvider>
+      </TestProviders>
     );
 
     expect(screen.getByText('Settings')).toBeInTheDocument();
@@ -30,9 +30,9 @@ describe('SettingsModal', () => {
 
   it('allows adding a new team member', () => {
     render(
-      <KanbanProvider>
+      <TestProviders>
         <SettingsModal onClose={() => {}} />
-      </KanbanProvider>
+      </TestProviders>
     );
 
     const input = screen.getByPlaceholderText('Add New Member');
@@ -48,9 +48,9 @@ describe('SettingsModal', () => {
     const linkClickSpy = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {});
 
     render(
-      <KanbanProvider>
+      <TestProviders>
         <SettingsModal onClose={() => {}} />
-      </KanbanProvider>
+      </TestProviders>
     );
 
     const exportButton = screen.getByText('Export Boards (JSON)');
@@ -64,9 +64,9 @@ describe('SettingsModal', () => {
 
   it('switches theme', () => {
     render(
-      <KanbanProvider>
+      <TestProviders>
         <SettingsModal onClose={() => {}} />
-      </KanbanProvider>
+      </TestProviders>
     );
 
     const lightButton = screen.getByText('Light');

@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { KanbanCard } from '../components/Cards/KanbanCard';
-import { KanbanProvider } from '../KanbanContext';
+import { TestProviders } from '../testUtils/TestProviders';
 import { initialMockData } from '../mockData';
 
 // Mock dnd-kit since it doesn't work well in jsdom/vitest without complex setup
@@ -29,9 +29,9 @@ const mockCard = initialMockData.cards[0];
 describe('KanbanCard', () => {
   it('renders card details correctly', () => {
     render(
-      <KanbanProvider>
+      <TestProviders>
         <KanbanCard card={mockCard} />
-      </KanbanProvider>
+      </TestProviders>
     );
 
     expect(screen.getByText(mockCard.title)).toBeInTheDocument();
@@ -40,9 +40,9 @@ describe('KanbanCard', () => {
 
   it('enters editing mode when edit button is clicked', () => {
     render(
-      <KanbanProvider>
+      <TestProviders>
         <KanbanCard card={mockCard} />
-      </KanbanProvider>
+      </TestProviders>
     );
 
     // Look for the button with the pen icon (Edit2)
@@ -53,7 +53,7 @@ describe('KanbanCard', () => {
     fireEvent.click(editBtn);
 
     expect(screen.getByPlaceholderText('Title')).toHaveValue(mockCard.title);
-    expect(screen.getByPlaceholderText('Description')).toBeInTheDocument();
+    expect(screen.getByPlaceholderText('Description (optional)')).toBeInTheDocument();
   });
 
   it('displays overdue status when card is past due', () => {
@@ -63,12 +63,12 @@ describe('KanbanCard', () => {
     };
 
     render(
-      <KanbanProvider>
+      <TestProviders>
         <KanbanCard card={overdueCard} />
-      </KanbanProvider>
+      </TestProviders>
     );
 
-    const clockIconContainer = screen.getByText(/d$/).parentElement;
-    expect(clockIconContainer).toHaveStyle({ color: 'var(--color-danger)' });
+    const clockIconContainer = screen.getByText(/late$/).parentElement;
+    expect(clockIconContainer).toHaveStyle({ color: 'var(--error)' });
   });
 });

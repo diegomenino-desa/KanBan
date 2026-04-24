@@ -1,0 +1,15 @@
+{
+  "version": 1,
+  "users": [
+    {
+      "id": "c3e8c8c3-bbf9-4742-ae1b-df087bee7456",
+      "username": "admin",
+      "name": "admin",
+      "email": "admin@localhost",
+      "role": "Admin",
+      "passwordHash": "$2a$12$KWYDwaTK5m.o8Xsl4iK7vOR.b728M2k6EH3hqkTdJpbOT05kA3Mpq",
+      "createdAt": 1777034219572,
+      "updatedAt": 1777034219572
+    }
+  ]
+}

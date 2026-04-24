@@ -3,6 +3,7 @@ import type { ReactNode } from 'react';
 import type { BoardData, KanbanCard, KanbanColumn, User } from './types';
 import { initialMockData } from './mockData';
 import { v4 as uuidv4 } from 'uuid';
+import { useAuth } from './auth/AuthContext';
 
 interface KanbanContextProps {
   boards: BoardData[];
@@ -34,11 +35,12 @@ interface KanbanContextProps {
 const KanbanContext = createContext<KanbanContextProps | undefined>(undefined);
 
 export const KanbanProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+  const { user: authUser } = useAuth();
+
   const [boards, setBoards] = useState<BoardData[]>(() => {
     const saved = localStorage.getItem('kanban-boards-collection');
     if (saved) {
       const parsed = JSON.parse(saved);
-      // Migration: Ensure all cards have a comments array
       return (parsed as BoardData[]).map(b => ({
         ...b,
         cards: b.cards.map(c => ({ ...c, comments: c.comments || [] }))
@@ -53,13 +55,12 @@ export const KanbanProvider: React.FC<{ children: ReactNode }> = ({ children }) 
   });
 
   const board = boards.find(b => b.id === activeBoardId) || boards[0];
-  const currentUser = board.users[0];
 
   const [theme, setTheme] = useState<'light' | 'dark'>(() => {
     const saved = localStorage.getItem('kanban-theme');
-    return (saved as 'light' | 'dark') || 'dark';
+    return (saved as 'light' | 'dark') || 'light';
   });
-  
+
   const [lang, setLang] = useState<'en' | 'es'>(() => {
     const saved = localStorage.getItem('kanban-lang');
     return (saved as 'en' | 'es') || 'en';
@@ -71,6 +72,31 @@ export const KanbanProvider: React.FC<{ children: ReactNode }> = ({ children }) 
     localStorage.setItem('kanban-theme', theme);
     localStorage.setItem('kanban-lang', lang);
   }, [boards, activeBoardId, theme, lang]);
+
+  // Sync the authenticated identity into the active board's user roster
+  // so the auth user is available as an assignee. The guard above ensures
+  // we only write when the roster actually needs updating.
+  useEffect(() => {
+    if (!authUser) return;
+    const existing = board.users.find(u => u.id === authUser.id);
+    if (existing && existing.name === authUser.name && existing.role === authUser.role) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setBoards(prev => prev.map(b => {
+      if (b.id !== board.id) return b;
+      const others = b.users.filter(u => u.id !== authUser.id);
+      const merged: User = {
+        id: authUser.id,
+        name: authUser.name,
+        initials: authUser.initials,
+        role: authUser.role,
+      };
+      return { ...b, users: [merged, ...others] };
+    }));
+  }, [authUser, board.id, board.users]);
+
+  const currentUser: User = authUser
+    ? { id: authUser.id, name: authUser.name, initials: authUser.initials, role: authUser.role }
+    : board.users[0];
 
   const updateActiveBoard = (updater: (prevBoard: BoardData) => BoardData) => {
     setBoards(prevBoards => prevBoards.map(b => b.id === activeBoardId ? updater(b) : b));
@@ -103,10 +129,10 @@ export const KanbanProvider: React.FC<{ children: ReactNode }> = ({ children }) 
     updateActiveBoard((prev) => {
       const cardIndex = prev.cards.findIndex(c => c.id === cardId);
       if (cardIndex === -1) return prev;
-      
+
       const updatedCards = [...prev.cards];
       const currCard = updatedCards[cardIndex];
-      
+
       if (currCard.columnId !== toColumnId) {
         updatedCards[cardIndex] = {
           ...currCard,
@@ -123,16 +149,16 @@ export const KanbanProvider: React.FC<{ children: ReactNode }> = ({ children }) 
       const activeCard = prev.cards.find(c => c.id === activeId);
       const overCard = prev.cards.find(c => c.id === overId);
       if (!activeCard || !overCard) return prev;
-      
+
       const columnCards = prev.cards.filter(c => c.columnId === activeCard.columnId);
       const otherCards = prev.cards.filter(c => c.columnId !== activeCard.columnId);
-      
+
       const oldIndex = columnCards.findIndex(c => c.id === activeId);
       const newIndex = columnCards.findIndex(c => c.id === overId);
-      
+
       const [removed] = columnCards.splice(oldIndex, 1);
       columnCards.splice(newIndex, 0, removed);
-      
+
       return { ...prev, cards: [...otherCards, ...columnCards] };
     });
   };
@@ -222,11 +248,11 @@ export const KanbanProvider: React.FC<{ children: ReactNode }> = ({ children }) 
   };
 
   return (
-    <KanbanContext.Provider value={{ 
+    <KanbanContext.Provider value={{
       boards, setBoards, activeBoardId, setActiveBoardId, addBoard, removeBoard, updateBoardName,
-      board, currentUser, moveCard, reorderCard, addCard, updateColumn, 
-      addColumn, removeColumn, reorderColumn, updateCard, removeCard, 
-      addUser, removeUser, theme, setTheme, lang, setLang 
+      board, currentUser, moveCard, reorderCard, addCard, updateColumn,
+      addColumn, removeColumn, reorderColumn, updateCard, removeCard,
+      addUser, removeUser, theme, setTheme, lang, setLang
     }}>
       {children}
     </KanbanContext.Provider>

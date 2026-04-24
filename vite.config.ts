@@ -20,9 +20,15 @@ export default defineConfig({
       usePolling: true,
     },
     hmr: {
-      clientPort: 8101,
+      clientPort: 8102,
     },
     allowedHosts: true,
+    proxy: {
+      '/auth': {
+        target: process.env.AUTH_SERVICE_URL ?? 'http://localhost:4000',
+        changeOrigin: false,
+      },
+    },
   },
 })
 
