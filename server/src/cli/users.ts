@@ -32,7 +32,7 @@ async function promptPassword(label: string): Promise<string> {
   const rl = readline.createInterface({ input: process.stdin, output: process.stdout, terminal: true });
   const out = rl as unknown as { _writeToOutput: (s: string) => void; output: { write: (s: string) => void } };
   const origWrite = out._writeToOutput.bind(rl);
-  out._writeToOutput = (_stringToWrite: string) => { /* swallow echo */ };
+  out._writeToOutput = (_: string) => { /* swallow echo */ };
   return new Promise<string>((resolve) => {
     rl.question(`${label}: `, (answer) => {
       out._writeToOutput = origWrite;
