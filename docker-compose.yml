@@ -8,7 +8,7 @@ services:
       - NODE_ENV=development
       - AUTH_SERVICE_URL=http://auth:4000
       # Choose login UI: ldap | local (username+password form) or oidc (Microsoft button)
-      - VITE_AUTH_MODE=ldap
+      - VITE_AUTH_MODE=local
     depends_on:
       - auth
     networks:
@@ -50,8 +50,8 @@ services:
       # empty, then can be removed. Manage users later with:
       #   docker compose exec auth npm run user:add <user> <name> <email> <role>
       - LOCAL_USERS_PATH=/app/data/users.json
-      # - BOOTSTRAP_ADMIN_USER=admin
-      # - BOOTSTRAP_ADMIN_PASSWORD=change-me-at-least-8-chars
+      - BOOTSTRAP_ADMIN_USER=admin
+      - BOOTSTRAP_ADMIN_PASSWORD=password123
     volumes:
       - ./server/data:/app/data
     networks:

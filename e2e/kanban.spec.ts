@@ -8,9 +8,9 @@ test.describe('Kanban Board E2E', () => {
     if (await page.getByText(/Sign in/i).isVisible()) {
       // Use credentials that match the default LDAP setup in docker-compose.yml
       // or common local bootstrap credentials.
-      // Based on docker-compose.yml, it's currently using forumsys LDAP.
-      await page.getByLabel(/USERNAME/i).fill('read-only-admin');
-      await page.getByLabel(/PASSWORD/i).fill('password');
+      // Based on docker-compose.yml, it's currently using local auth with bootstrap.
+      await page.getByLabel(/USERNAME/i).fill('admin');
+      await page.getByLabel(/PASSWORD/i).fill('password123');
       await page.getByRole('button', { name: /Sign in/i }).click();
       
       // Wait for navigation/loading to complete
