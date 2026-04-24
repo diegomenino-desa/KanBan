@@ -2,9 +2,20 @@ import { test, expect } from '@playwright/test';
 
 test.describe('Kanban Board E2E', () => {
   test.beforeEach(async ({ page }) => {
-    // In CI we use baseURL: http://localhost:8101
-    // Locally for debugging it might be 5173 but I'll trust the config
     await page.goto('/');
+
+    // If we are on the login page, perform login
+    if (await page.getByText(/Sign in/i).isVisible()) {
+      // Use credentials that match the default LDAP setup in docker-compose.yml
+      // or common local bootstrap credentials.
+      // Based on docker-compose.yml, it's currently using forumsys LDAP.
+      await page.getByLabel(/USERNAME/i).fill('read-only-admin');
+      await page.getByLabel(/PASSWORD/i).fill('password');
+      await page.getByRole('button', { name: /Sign in/i }).click();
+      
+      // Wait for navigation/loading to complete
+      await expect(page.getByText('KanbanBoard')).toBeVisible();
+    }
   });
 
   test('should load the kanban board', async ({ page }) => {
