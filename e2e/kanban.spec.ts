@@ -14,13 +14,13 @@ test.describe('Kanban Board E2E', () => {
       await page.getByRole('button', { name: /Sign in/i }).click();
       
       // Wait for navigation/loading to complete
-      await expect(page.getByText('KanbanBoard')).toBeVisible();
+      await expect(page.getByText('KanbanBoard', { exact: true }).toBeVisible();
     }
   });
 
   test('should load the kanban board', async ({ page }) => {
     await expect(page).toHaveTitle(/kanbanboard/i);
-    await expect(page.getByText('KanbanBoard')).toBeVisible();
+        await expect(page.getByText('KanbanBoard', { exact: true })).toBeVisible();
   });
 
   test('should allow creating a new task', async ({ page }) => {
