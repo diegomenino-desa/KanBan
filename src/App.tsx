@@ -11,17 +11,34 @@ import { AuthProvider, useAuth } from './auth/AuthContext';
 import { LoginGate } from './auth/LoginGate';
 
 const KanbanApp = () => {
-  const { theme, lang, boards, activeBoardId, setActiveBoardId, addBoard, removeBoard, board } = useKanban();
+  const {
+    theme, lang, boards, activeBoardId, setActiveBoardId,
+    addBoard, removeBoard, board, loading, loadError, isAdmin,
+  } = useKanban();
   const { user, logout } = useAuth();
   const t = translations[lang];
   const [showDashboard, setShowDashboard] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
 
-  if (!board) return (
-    <div style={{ background: '#f7f7f7', color: '#222222', height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Inter, sans-serif', fontWeight: 500 }}>
-      Loading Workspace...
-    </div>
-  );
+  const handleAddBoard = async () => {
+    const name = prompt('Enter board name:');
+    if (!name) return;
+    try {
+      await addBoard(name);
+    } catch {
+      alert('Failed to create board.');
+    }
+  };
+
+  const handleRemoveBoard = async () => {
+    if (!board) return;
+    if (!window.confirm(`Delete board "${board.name}"?`)) return;
+    try {
+      await removeBoard(activeBoardId);
+    } catch {
+      alert('Failed to delete board.');
+    }
+  };
 
   return (
     <div className={`app-container ${theme === 'dark' ? 'dark-theme' : ''}`}>
@@ -36,27 +53,31 @@ const KanbanApp = () => {
             <select
               value={activeBoardId}
               onChange={(e) => setActiveBoardId(e.target.value)}
+              disabled={boards.length === 0}
               style={{ background: 'transparent', color: 'var(--ink)', border: 'none', fontFamily: 'inherit', fontWeight: 600, fontSize: '0.9rem', outline: 'none', cursor: 'pointer' }}
             >
+              {boards.length === 0 && <option value="">— no boards —</option>}
               {boards.map(b => (
                 <option key={b.id} value={b.id} style={{ background: 'var(--canvas)', color: 'var(--ink)' }}>{b.name}</option>
               ))}
             </select>
-            <button
-              className="btn-icon"
-              onClick={() => { const name = prompt('Enter board name:'); if (name) addBoard(name); }}
-              title="Add Board"
-            >
-              <Plus size={14} />
-            </button>
-            <button
-              className="btn-icon"
-              onClick={() => { if (window.confirm(`Delete board "${board.name}"?`)) removeBoard(activeBoardId); }}
-              title="Delete Board"
-              style={{ color: 'var(--error)' }}
-            >
-              <Trash2 size={14} />
-            </button>
+            {isAdmin && (
+              <>
+                <button className="btn-icon" onClick={handleAddBoard} title="Add Board">
+                  <Plus size={14} />
+                </button>
+                {board && (
+                  <button
+                    className="btn-icon"
+                    onClick={handleRemoveBoard}
+                    title="Delete Board"
+                    style={{ color: 'var(--error)' }}
+                  >
+                    <Trash2 size={14} />
+                  </button>
+                )}
+              </>
+            )}
           </div>
         </div>
 
@@ -85,13 +106,42 @@ const KanbanApp = () => {
       </nav>
 
       <div className="main-content">
-        <BoardArea />
+        {loading ? (
+          <div style={centeredStyle}>{t.loadingWorkspace}</div>
+        ) : loadError ? (
+          <div style={{ ...centeredStyle, color: 'var(--error)' }}>{loadError}</div>
+        ) : !board && boards.length === 0 ? (
+          <div style={{ ...centeredStyle, flexDirection: 'column', gap: '12px' }}>
+            <span style={{ color: 'var(--ash)' }}>{t.noBoardsYet}</span>
+            {isAdmin ? (
+              <button className="btn btn-primary" onClick={handleAddBoard} style={{ padding: '10px 18px', borderRadius: '10px' }}>
+                <Plus size={16} /> {t.createFirstBoard}
+              </button>
+            ) : (
+              <span style={{ color: 'var(--ash)', fontSize: '0.85rem' }}>{t.askAdminForAccess}</span>
+            )}
+          </div>
+        ) : !board ? (
+          <div style={centeredStyle}>{t.loadingWorkspace}</div>
+        ) : (
+          <BoardArea />
+        )}
       </div>
 
       {showDashboard && <Dashboard onClose={() => setShowDashboard(false)} />}
       {showSettings && <SettingsModal onClose={() => setShowSettings(false)} />}
     </div>
   );
+};
+
+const centeredStyle: React.CSSProperties = {
+  flex: 1,
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  fontFamily: 'Inter, sans-serif',
+  fontWeight: 500,
+  color: 'var(--ash)',
 };
 
 function App() {

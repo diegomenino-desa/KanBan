@@ -18,6 +18,8 @@ export const NewCardModal: React.FC<Props> = ({ columnId, onClose }) => {
 
   const cardTypes: CardType[] = ['Feature', 'Bug', 'Expedite', 'TechDebt', 'Spike'];
 
+  if (!board) return null;
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!title.trim()) return;

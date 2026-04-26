@@ -29,6 +29,8 @@ const BaseSchema = z.object({
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
   SESSION_SECRET: z.string().min(16, 'SESSION_SECRET must be at least 16 chars'),
   APP_BASE_URL: z.string().url().default('http://localhost:5173'),
+  BOARDS_STORE_PATH: z.string().default('./data/boards.json'),
+  PREFERENCES_STORE_PATH: z.string().default('./data/preferences.json'),
 });
 
 const LdapSchema = z.object({

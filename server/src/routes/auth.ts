@@ -10,7 +10,11 @@ import {
   changeLocalUserPassword,
   createLocalUser,
   UserMgmtError,
+  adminResetLocalUserPassword,
+  deleteLocalUser,
+  listLocalUsers,
 } from '../providers/local.js';
+import { getPreferences, setPreferences } from '../providers/preferences.js';
 
 const LoginBody = z.object({
   username: z.string().min(1).max(256),
@@ -28,6 +32,15 @@ const CreateUserBody = z.object({
 const ChangePasswordBody = z.object({
   currentPassword: z.string().min(1).max(1024),
   newPassword: z.string().min(8).max(1024),
+});
+
+const AdminResetPasswordBody = z.object({
+  newPassword: z.string().min(8).max(1024),
+});
+
+const PreferencesBody = z.object({
+  theme: z.enum(['light', 'dark']).optional(),
+  lang: z.enum(['en', 'es']).optional(),
 });
 
 function buildLoginLimiter() {
@@ -67,6 +80,28 @@ export function buildAuthRouter(config: Config, oidc?: OidcRuntime): Router {
   router.get('/me', (req: Request, res: Response) => {
     if (!req.session.user) return res.status(401).json({ error: 'unauthenticated' });
     return res.json(req.session.user);
+  });
+
+  router.get('/me/preferences', requireAuth, async (req: Request, res: Response) => {
+    try {
+      const prefs = await getPreferences(config.PREFERENCES_STORE_PATH, req.session.user!.id);
+      return res.json(prefs);
+    } catch (err) {
+      console.error('[prefs] read failure:', (err as Error).message);
+      return res.status(503).json({ error: 'store_unavailable' });
+    }
+  });
+
+  router.put('/me/preferences', requireAuth, async (req: Request, res: Response) => {
+    const parsed = PreferencesBody.safeParse(req.body);
+    if (!parsed.success) return res.status(400).json({ error: 'invalid_request' });
+    try {
+      const prefs = await setPreferences(config.PREFERENCES_STORE_PATH, req.session.user!.id, parsed.data);
+      return res.json(prefs);
+    } catch (err) {
+      console.error('[prefs] write failure:', (err as Error).message);
+      return res.status(503).json({ error: 'store_unavailable' });
+    }
   });
 
   router.post('/logout', (req: Request, res: Response) => {
@@ -114,6 +149,16 @@ export function buildAuthRouter(config: Config, oidc?: OidcRuntime): Router {
       }
     });
 
+    router.get('/users', requireAdmin, async (_req: Request, res: Response) => {
+      try {
+        const users = await listLocalUsers(config);
+        return res.json(users);
+      } catch (err) {
+        console.error('[local] list users failure:', (err as Error).message);
+        return res.status(503).json({ error: 'store_unavailable' });
+      }
+    });
+
     router.post('/users', requireAdmin, async (req: Request, res: Response) => {
       const parsed = CreateUserBody.safeParse(req.body);
       if (!parsed.success) return res.status(400).json({ error: 'invalid_request' });
@@ -125,6 +170,37 @@ export function buildAuthRouter(config: Config, oidc?: OidcRuntime): Router {
           return res.status(409).json({ error: 'username_taken' });
         }
         console.error('[local] create user failure:', (err as Error).message);
+        return res.status(503).json({ error: 'store_unavailable' });
+      }
+    });
+
+    router.delete('/users/:id', requireAdmin, async (req: Request, res: Response) => {
+      try {
+        await deleteLocalUser(config, req.params.id!);
+        return res.status(204).end();
+      } catch (err) {
+        if (err instanceof UserMgmtError && err.code === 'not_found') {
+          return res.status(404).json({ error: 'not_found' });
+        }
+        if (err instanceof UserMgmtError && err.code === 'last_admin') {
+          return res.status(409).json({ error: 'last_admin' });
+        }
+        console.error('[local] delete user failure:', (err as Error).message);
+        return res.status(503).json({ error: 'store_unavailable' });
+      }
+    });
+
+    router.post('/users/:id/password', requireAdmin, async (req: Request, res: Response) => {
+      const parsed = AdminResetPasswordBody.safeParse(req.body);
+      if (!parsed.success) return res.status(400).json({ error: 'invalid_request' });
+      try {
+        await adminResetLocalUserPassword(config, req.params.id!, parsed.data.newPassword);
+        return res.status(204).end();
+      } catch (err) {
+        if (err instanceof UserMgmtError && err.code === 'not_found') {
+          return res.status(404).json({ error: 'not_found' });
+        }
+        console.error('[local] admin reset failure:', (err as Error).message);
         return res.status(503).json({ error: 'store_unavailable' });
       }
     });

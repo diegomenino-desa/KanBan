@@ -176,6 +176,44 @@ export async function changeLocalUserPassword(
   await writeStore(config.LOCAL_USERS_PATH, store);
 }
 
+export async function adminResetLocalUserPassword(
+  config: LocalConfig,
+  userId: string,
+  newPassword: string,
+): Promise<void> {
+  const store = await readStore(config.LOCAL_USERS_PATH);
+  const user = store.users.find((u) => u.id === userId);
+  if (!user) throw new UserMgmtError('User not found', 'not_found');
+  user.passwordHash = await hashPassword(newPassword);
+  user.updatedAt = Date.now();
+  await writeStore(config.LOCAL_USERS_PATH, store);
+}
+
+export async function deleteLocalUser(config: LocalConfig, userId: string): Promise<void> {
+  const store = await readStore(config.LOCAL_USERS_PATH);
+  const user = store.users.find((u) => u.id === userId);
+  if (!user) throw new UserMgmtError('User not found', 'not_found');
+  if (user.role === 'Admin') {
+    const adminCount = store.users.filter((u) => u.role === 'Admin').length;
+    if (adminCount <= 1) {
+      throw new UserMgmtError('Cannot remove the only Admin', 'last_admin');
+    }
+  }
+  store.users = store.users.filter((u) => u.id !== userId);
+  await writeStore(config.LOCAL_USERS_PATH, store);
+}
+
+export async function listLocalUsers(config: LocalConfig): Promise<AuthUser[]> {
+  const store = await readStore(config.LOCAL_USERS_PATH);
+  return store.users.map((u) => ({
+    id: u.id,
+    name: u.name,
+    email: u.email,
+    initials: initialsFromName(u.name),
+    role: u.role,
+  }));
+}
+
 // ─── Bootstrap ─────────────────────────────────────────────
 
 export async function bootstrapAdminIfEmpty(config: LocalConfig): Promise<void> {

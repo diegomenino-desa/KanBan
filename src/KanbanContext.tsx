@@ -1,20 +1,24 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useRef, useCallback } from 'react';
 import type { ReactNode } from 'react';
 import type { BoardData, KanbanCard, KanbanColumn, User } from './types';
-import { initialMockData } from './mockData';
 import { v4 as uuidv4 } from 'uuid';
 import { useAuth } from './auth/AuthContext';
+import { boardsApi, selfApi, ApiError } from './api';
 
 interface KanbanContextProps {
   boards: BoardData[];
+  loading: boolean;
+  loadError: string | null;
   activeBoardId: string;
   setActiveBoardId: (id: string) => void;
-  addBoard: (name: string) => void;
-  setBoards: (boards: BoardData[]) => void;
-  removeBoard: (id: string) => void;
+  addBoard: (name: string) => Promise<void>;
+  setBoards: (boards: BoardData[]) => Promise<void>;
+  removeBoard: (id: string) => Promise<void>;
   updateBoardName: (id: string, name: string) => void;
-  board: BoardData;
-  currentUser: User;
+  board: BoardData | null;
+  currentUser: User | null;
+  canEdit: boolean;
+  isAdmin: boolean;
   moveCard: (cardId: string, toColumnId: string) => void;
   reorderCard: (activeId: string, overId: string) => void;
   addCard: (card: Omit<KanbanCard, 'id' | 'createdAt' | 'enteredColumnAt' | 'comments'>) => void;
@@ -24,8 +28,9 @@ interface KanbanContextProps {
   reorderColumn: (activeId: string, overId: string) => void;
   updateCard: (cardId: string, updates: Partial<KanbanCard>) => void;
   removeCard: (cardId: string) => void;
-  addUser: (input: { id?: string; name: string; role?: User['role'] }) => void;
-  removeUser: (id: string) => void;
+  assignUserToBoard: (boardId: string, user: { id: string; name: string; role: User['role'] }) => Promise<void>;
+  removeUserFromBoard: (boardId: string, userId: string) => Promise<void>;
+  reloadBoards: () => Promise<void>;
   theme: 'light' | 'dark';
   setTheme: (theme: 'light' | 'dark') => void;
   lang: 'en' | 'es';
@@ -37,108 +42,169 @@ const KanbanContext = createContext<KanbanContextProps | undefined>(undefined);
 export const KanbanProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const { user: authUser } = useAuth();
 
-  const [boards, setBoards] = useState<BoardData[]>(() => {
-    const saved = localStorage.getItem('kanban-boards-collection');
-    if (saved) {
-      const parsed = JSON.parse(saved);
-      return (parsed as BoardData[]).map(b => ({
-        ...b,
-        cards: b.cards.map(c => ({ ...c, comments: c.comments || [] }))
-      }));
+  const [boards, setBoardsState] = useState<BoardData[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
+
+  const [activeBoardId, setActiveBoardId] = useState<string>(() =>
+    localStorage.getItem('kanban-active-board-id') ?? ''
+  );
+
+  // Theme + lang are persisted server-side per user (via /auth/me/preferences)
+  // so they follow the user across browsers. Default while loading; the effect
+  // below replaces these with the user's stored prefs once auth resolves.
+  const [theme, setThemeState] = useState<'light' | 'dark'>('light');
+  const [lang, setLangState] = useState<'en' | 'es'>('en');
+  const [prefsLoaded, setPrefsLoaded] = useState(false);
+
+  useEffect(() => {
+    if (activeBoardId) localStorage.setItem('kanban-active-board-id', activeBoardId);
+  }, [activeBoardId]);
+
+  // Load preferences when auth user becomes available; reset on sign-out.
+  useEffect(() => {
+    if (!authUser) {
+      setThemeState('light');
+      setLangState('en');
+      setPrefsLoaded(false);
+      return;
     }
-    return [initialMockData];
-  });
+    let cancelled = false;
+    void (async () => {
+      try {
+        const prefs = await selfApi.getPreferences();
+        if (cancelled) return;
+        setThemeState(prefs.theme);
+        setLangState(prefs.lang);
+      } catch (err) {
+        console.error('[prefs] load failed:', err);
+      } finally {
+        if (!cancelled) setPrefsLoaded(true);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [authUser]);
 
-  const [activeBoardId, setActiveBoardId] = useState<string>(() => {
-    const savedId = localStorage.getItem('kanban-active-board-id');
-    return savedId || boards[0]?.id || initialMockData.id;
-  });
-
-  const board = boards.find(b => b.id === activeBoardId) || boards[0];
-
-  const [theme, setTheme] = useState<'light' | 'dark'>(() => {
-    const saved = localStorage.getItem('kanban-theme');
-    return (saved as 'light' | 'dark') || 'light';
-  });
-
-  const [lang, setLang] = useState<'en' | 'es'>(() => {
-    const saved = localStorage.getItem('kanban-lang');
-    return (saved as 'en' | 'es') || 'en';
-  });
-
+  // Debounced PUT to avoid spamming on rapid toggles. Only fires after the
+  // initial load to avoid clobbering server values with the default state.
+  const prefsSaveTimer = useRef<number | undefined>(undefined);
   useEffect(() => {
-    localStorage.setItem('kanban-boards-collection', JSON.stringify(boards));
-    localStorage.setItem('kanban-active-board-id', activeBoardId);
-    localStorage.setItem('kanban-theme', theme);
-    localStorage.setItem('kanban-lang', lang);
-  }, [boards, activeBoardId, theme, lang]);
-
-  // Sync the authenticated identity into the active board's user roster
-  // so the auth user is available as an assignee. The guard above ensures
-  // we only write when the roster actually needs updating.
-  useEffect(() => {
-    if (!authUser) return;
-    const existing = board.users.find(u => u.id === authUser.id);
-    if (existing && existing.name === authUser.name && existing.role === authUser.role) return;
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setBoards(prev => prev.map(b => {
-      if (b.id !== board.id) return b;
-      const others = b.users.filter(u => u.id !== authUser.id);
-      const merged: User = {
-        id: authUser.id,
-        name: authUser.name,
-        initials: authUser.initials,
-        role: authUser.role,
-      };
-      return { ...b, users: [merged, ...others] };
-    }));
-  }, [authUser, board.id, board.users]);
-
-  const currentUser: User = authUser
-    ? { id: authUser.id, name: authUser.name, initials: authUser.initials, role: authUser.role }
-    : board.users[0];
-
-  const updateActiveBoard = (updater: (prevBoard: BoardData) => BoardData) => {
-    setBoards(prevBoards => prevBoards.map(b => b.id === activeBoardId ? updater(b) : b));
-  };
-
-  const addBoard = (name: string) => {
-    const newBoard: BoardData = {
-      ...initialMockData,
-      id: uuidv4(),
-      name,
-      columns: [...initialMockData.columns],
-      cards: [],
+    if (!authUser || !prefsLoaded) return;
+    if (prefsSaveTimer.current) window.clearTimeout(prefsSaveTimer.current);
+    prefsSaveTimer.current = window.setTimeout(() => {
+      void selfApi.setPreferences({ theme, lang }).catch(err => {
+        console.error('[prefs] save failed:', err);
+      });
+    }, 250);
+    return () => {
+      if (prefsSaveTimer.current) window.clearTimeout(prefsSaveTimer.current);
     };
-    setBoards([...boards, newBoard]);
-    setActiveBoardId(newBoard.id);
+  }, [theme, lang, authUser, prefsLoaded]);
+
+  const setTheme = useCallback((t: 'light' | 'dark') => setThemeState(t), []);
+  const setLang = useCallback((l: 'en' | 'es') => setLangState(l), []);
+
+  const reloadBoards = useCallback(async () => {
+    setLoadError(null);
+    try {
+      const list = await boardsApi.list();
+      setBoardsState(list);
+      setActiveBoardId(prev => {
+        if (prev && list.some(b => b.id === prev)) return prev;
+        return list[0]?.id ?? '';
+      });
+    } catch (err) {
+      const msg = err instanceof ApiError ? `Failed to load boards (${err.status})` : 'Failed to load boards';
+      setLoadError(msg);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  // Initial load — only after auth is settled.
+  useEffect(() => {
+    if (!authUser) {
+      setBoardsState([]);
+      setLoading(false);
+      return;
+    }
+    setLoading(true);
+    void reloadBoards();
+  }, [authUser, reloadBoards]);
+
+  const board = boards.find(b => b.id === activeBoardId) ?? null;
+
+  const currentUser: User | null = authUser
+    ? { id: authUser.id, name: authUser.name, initials: authUser.initials, role: authUser.role }
+    : null;
+
+  const isAdmin = authUser?.role === 'Admin';
+  const isViewer = authUser?.role === 'Viewer';
+  const isMember = !!(board && authUser && board.users.some(u => u.id === authUser.id));
+  const canEdit = !!authUser && !isViewer && (isAdmin || isMember);
+
+  // ─── Persistence: debounced PUT of the active board ──────
+  // We coalesce rapid edits (drag/reorder/inline edits) into one network call.
+  const saveTimers = useRef<Map<string, number>>(new Map());
+
+  const scheduleBoardSave = useCallback((boardId: string) => {
+    const timers = saveTimers.current;
+    const existing = timers.get(boardId);
+    if (existing) window.clearTimeout(existing);
+    const id = window.setTimeout(() => {
+      timers.delete(boardId);
+      const target = boards.find(b => b.id === boardId);
+      if (!target) return;
+      void boardsApi.update(boardId, target).catch(err => {
+        console.error('[boards] save failed:', err);
+      });
+    }, 400);
+    timers.set(boardId, id);
+  }, [boards]);
+
+  // ─── Local mutation helpers (optimistic, then synced) ────
+  const updateActiveBoard = (updater: (prevBoard: BoardData) => BoardData) => {
+    if (!activeBoardId) return;
+    setBoardsState(prev => prev.map(b => b.id === activeBoardId ? updater(b) : b));
+    scheduleBoardSave(activeBoardId);
   };
 
-  const removeBoard = (id: string) => {
+  // ─── Boards CRUD (server-backed) ────────────────────────
+  const addBoard = async (name: string) => {
+    const created = await boardsApi.create(name);
+    setBoardsState(prev => [...prev, created]);
+    setActiveBoardId(created.id);
+  };
+
+  const removeBoard = async (id: string) => {
     if (boards.length <= 1) return;
-    const newBoards = boards.filter(b => b.id !== id);
-    setBoards(newBoards);
-    if (activeBoardId === id) setActiveBoardId(newBoards[0].id);
+    await boardsApi.remove(id);
+    setBoardsState(prev => prev.filter(b => b.id !== id));
+    if (activeBoardId === id) {
+      const remaining = boards.filter(b => b.id !== id);
+      if (remaining[0]) setActiveBoardId(remaining[0].id);
+    }
+  };
+
+  const setBoards = async (next: BoardData[]) => {
+    await boardsApi.replaceAll(next);
+    setBoardsState(next);
+    if (!next.some(b => b.id === activeBoardId) && next[0]) setActiveBoardId(next[0].id);
   };
 
   const updateBoardName = (id: string, name: string) => {
-    setBoards(prev => prev.map(b => b.id === id ? { ...b, name } : b));
+    setBoardsState(prev => prev.map(b => b.id === id ? { ...b, name } : b));
+    scheduleBoardSave(id);
   };
 
   const moveCard = (cardId: string, toColumnId: string) => {
     updateActiveBoard((prev) => {
       const cardIndex = prev.cards.findIndex(c => c.id === cardId);
       if (cardIndex === -1) return prev;
-
       const updatedCards = [...prev.cards];
       const currCard = updatedCards[cardIndex];
-
       if (currCard.columnId !== toColumnId) {
-        updatedCards[cardIndex] = {
-          ...currCard,
-          columnId: toColumnId,
-          enteredColumnAt: Date.now()
-        };
+        updatedCards[cardIndex] = { ...currCard, columnId: toColumnId, enteredColumnAt: Date.now() };
       }
       return { ...prev, cards: updatedCards };
     });
@@ -182,12 +248,7 @@ export const KanbanProvider: React.FC<{ children: ReactNode }> = ({ children }) 
   };
 
   const addColumn = (title: string) => {
-    const newCol: KanbanColumn = {
-      id: uuidv4(),
-      title,
-      wipLimit: 0,
-      dod: ''
-    };
+    const newCol: KanbanColumn = { id: uuidv4(), title, wipLimit: 0, dod: '' };
     updateActiveBoard(prev => ({ ...prev, columns: [...prev.columns, newCol] }));
   };
 
@@ -225,38 +286,24 @@ export const KanbanProvider: React.FC<{ children: ReactNode }> = ({ children }) 
     }));
   };
 
-  const addUser = (input: { id?: string; name: string; role?: User['role'] }) => {
-    const id = input.id ?? uuidv4();
-    const initials = input.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() || 'U';
-    const newUser: User = {
-      id,
-      name: input.name,
-      initials,
-      role: input.role ?? 'Viewer'
-    };
-    updateActiveBoard(prev => prev.users.some(u => u.id === id)
-      ? prev
-      : { ...prev, users: [...prev.users, newUser] }
-    );
+  const assignUserToBoard = async (boardId: string, user: { id: string; name: string; role: User['role'] }) => {
+    const updated = await boardsApi.assignUser(boardId, user);
+    setBoardsState(prev => prev.map(b => b.id === boardId ? updated : b));
   };
 
-  const removeUser = (userId: string) => {
-    updateActiveBoard(prev => ({
-      ...prev,
-      users: prev.users.filter(u => u.id !== userId),
-      cards: prev.cards.map(c => ({
-        ...c,
-        assignees: c.assignees.filter(id => id !== userId)
-      }))
-    }));
+  const removeUserFromBoard = async (boardId: string, userId: string) => {
+    await boardsApi.removeUser(boardId, userId);
+    await reloadBoards();
   };
 
   return (
     <KanbanContext.Provider value={{
-      boards, setBoards, activeBoardId, setActiveBoardId, addBoard, removeBoard, updateBoardName,
-      board, currentUser, moveCard, reorderCard, addCard, updateColumn,
+      boards, loading, loadError, activeBoardId, setActiveBoardId, addBoard, setBoards, removeBoard, updateBoardName,
+      board, currentUser, canEdit, isAdmin: !!isAdmin,
+      moveCard, reorderCard, addCard, updateColumn,
       addColumn, removeColumn, reorderColumn, updateCard, removeCard,
-      addUser, removeUser, theme, setTheme, lang, setLang
+      assignUserToBoard, removeUserFromBoard, reloadBoards,
+      theme, setTheme, lang, setLang
     }}>
       {children}
     </KanbanContext.Provider>

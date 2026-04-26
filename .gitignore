@@ -27,7 +27,14 @@ dist-ssr
 /playwright-report/
 /test-results/
 
-# Local auth store — contains bcrypt password hashes, never check in
+# Server-side runtime state — never check in
 /server/data/users.json
 /server/data/users.json.*.tmp
+/server/data/boards.json
+/server/data/boards.json.*.tmp
+/server/data/preferences.json
+/server/data/preferences.json.*.tmp
 /server/.env
+
+# Claude Code per-project config
+/.claude/

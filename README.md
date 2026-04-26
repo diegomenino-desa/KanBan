@@ -1,8 +1,72 @@
-# KanbanBoard — v2.1
+# KanbanBoard — v2.5
 
 A multi-board Kanban workspace for teams that want a calm, travel-magazine feel over chrome-heavy UI, with pluggable enterprise authentication (Active Directory, Entra ID, or a built-in local user store).
 
 ![KanbanBoard Preview](https://github.com/diegomenino/KanbanBoard/raw/main/src/assets/hero.png)
+
+---
+
+## What's new in 2.5
+
+### Server-side board store + role-based access control
+
+Boards no longer live in `localStorage` — they're persisted on the auth service at `server/data/boards.json` and fetched per session, so workspace state follows the user across browsers and devices instead of being trapped in one machine.
+
+Three roles are now enforced both in the UI and on the server:
+
+| Role | Can do |
+|---|---|
+| **Admin** | All of Editor + Viewer, plus: create/delete boards, assign or remove users to boards, create/delete auth accounts, reset any user's password |
+| **Editor** | Read & write cards, columns, comments — only on boards they are a member of |
+| **Viewer** | Read-only access to assigned boards. All edit UI is hidden; server also rejects writes |
+
+Membership is per-board: an admin assigns specific users to specific boards from **Settings → Board members**. Non-members never see a board in their picker. Admins bypass the membership check (they see everything).
+
+### Admin user management UI (local mode)
+
+Admin Settings now ships a full account management panel:
+- **Add new user** — creates an auth account from username / name / email / role / password and (when a board is open) auto-assigns to it.
+- **All users** — full directory list with one-click reset-password and delete (refuses to remove the only Admin).
+- **Assign existing user** — drop-down picker on each board to bring an existing user onto the team.
+
+### Self-service password change
+
+Any signed-in user gets a **Change password** card in Settings (local auth only) — current password verification, new password ≥ 8 chars, double-confirm, rate-limited at 10 attempts / 15 min.
+
+### Per-user theme & language preferences
+
+Theme and language are now stored server-side per user (`server/data/preferences.json`, keyed by user id). They follow the user — sign in on a different browser and your dark-mode + Spanish settings come with you. Auth-mode-agnostic (works under LDAP, OIDC, and local).
+
+### Mobile-friendly UX (≤768px)
+
+- Top nav collapses (wordmark + button labels hide; icons stay).
+- Columns shrink to `min(86vw, 320px)` with x-scroll-snap so one column dominates and the next peeks.
+- `TouchSensor` with a 250 ms long-press lets taps and swipes scroll naturally, while a held finger starts a drag.
+- All `.btn-icon` controls scale up to 40px on mobile for finger-sized targets.
+- Modal backdrop padding shrinks; settings 2-col grids collapse to 1 col.
+
+### New REST endpoints
+
+```
+GET    /api/boards                          list boards visible to me
+POST   /api/boards                          admin: create board
+PUT    /api/boards                          admin: bulk replace (Import)
+PUT    /api/boards/:id                      Editor+ on board: persist board
+DELETE /api/boards/:id                      admin: delete board
+POST   /api/boards/:id/users                admin: add member
+DELETE /api/boards/:id/users/:userId        admin: remove member
+GET    /auth/users                          admin (local): list accounts
+POST   /auth/users                          admin (local): create account
+DELETE /auth/users/:id                      admin (local): delete account
+POST   /auth/users/:id/password             admin (local): reset another user's password
+POST   /auth/me/password                    self (local): change own password
+GET    /auth/me/preferences                 self: read theme + lang
+PUT    /auth/me/preferences                 self: update theme + lang
+```
+
+CSRF protection rides on the existing `SameSite=Strict` + `HttpOnly` session cookie — no token middleware needed for these endpoints.
+
+> **Upgrading from 2.1:** `localStorage` boards are not migrated automatically. The first admin sign-in lands on an empty workspace; either click **Add board** to start fresh or use **Settings → Import** with a previously exported JSON to restore.
 
 ---
 
@@ -61,8 +125,10 @@ The "current user" in the Kanban workspace is now the authenticated identity —
 - Per-board activity breakdown.
 
 ### Team & data
-- Per-board user roster — populated by the authenticated identity and editable in Settings.
-- JSON export / import for the full boards collection (backup and restore).
+- Per-board membership — admins explicitly assign users to specific boards from Settings.
+- Server-side board persistence (`server/data/boards.json`) — workspace state follows the user, not the browser.
+- Per-user preferences (theme + language) persisted server-side and synced across devices.
+- JSON export / import for the full boards collection (admin only — replaces all server-side board data).
 - English and Spanish localization.
 
 ---
@@ -153,18 +219,27 @@ docker compose exec auth npm run user:remove alice
 
 ```
 ┌────────────────────┐        ┌────────────────────────┐        ┌──────────────────────┐
-│  React SPA (Vite)  │◀──────▶│  auth-service (Node)   │◀──────▶│  local users.json    │
-│  LoginGate +       │  same- │  Express + HttpOnly    │        │   — OR —             │
-│  AuthContext       │  origin│  signed session cookie │        │  AD DC (LDAP/LDAPS)  │
-└────────────────────┘        └────────────────────────┘        │   — OR —             │
-                                                                │  Entra ID (OIDC)     │
-                                                                └──────────────────────┘
+│  React SPA (Vite)  │◀──────▶│  auth-service (Node)   │◀──────▶│  Identity provider   │
+│  LoginGate +       │  same- │  Express + HttpOnly    │        │   users.json         │
+│  AuthContext +     │  origin│  signed session cookie │        │    — OR —            │
+│  KanbanContext     │   /auth│  + role-based authz    │        │   AD DC (LDAP/LDAPS) │
+│   (server-fetched  │   /api │                        │        │    — OR —            │
+│    boards & prefs) │        │                        │        │   Entra ID (OIDC)    │
+└────────────────────┘        └────────────────────────┘        └──────────────────────┘
+                                          │
+                                          ▼
+                              ┌────────────────────────┐
+                              │  Server-side state     │
+                              │  data/boards.json      │
+                              │  data/preferences.json │
+                              └────────────────────────┘
 ```
 
 - SPA and auth-service share an origin in production (NGINX in front, or Express serves `dist/` directly).
-- In dev, Vite proxies `/auth/*` to `http://localhost:4000` so the cookie flow works same-origin.
+- In dev, Vite proxies both `/auth/*` and `/api/*` to `http://localhost:4000` so the cookie flow works same-origin.
 - Session TTL is 8h rolling, stored in `express-session` with an HttpOnly signed cookie.
 - All three modes normalize to a single `AuthUser` shape — `{ id, name, email, initials, role }` — consumed by [src/KanbanContext.tsx](src/KanbanContext.tsx) to drive the Kanban workspace.
+- Boards, board membership, card data, and per-user preferences are all persisted server-side and authorized per-request against the session user's role and board membership.
 
 ---
 
@@ -201,7 +276,29 @@ cd server && npm run typecheck
 
 ## 🇪🇸 Versión en Español
 
-KanbanBoard v2.1 es un espacio de trabajo Kanban multi-tablero con un nuevo sistema de diseño inspirado en Airbnb (canvas blanco, acento coral Rausch, tipografía Inter/Cereal) y autenticación empresarial conectable con tres modos: **local** (usuarios con contraseña bcrypt en un archivo JSON, gestionados por CLI), **ldap** (Active Directory on-prem) y **oidc** (Microsoft Entra ID). Todos los modos comparten el mismo contrato de cookie de sesión — cambiar de proveedor es una edición de `AUTH_MODE`, no un cambio de código. El "usuario actual" ahora es la identidad autenticada real, no `board.users[0]`. La guía rápida es idéntica a la versión inglesa — véase más arriba.
+KanbanBoard v2.5 es un espacio de trabajo Kanban multi-tablero con sistema de diseño inspirado en Airbnb (canvas blanco, acento coral Rausch, tipografía Inter) y autenticación empresarial conectable con tres modos: **local** (usuarios con contraseña bcrypt en un archivo JSON), **ldap** (Active Directory on-prem) y **oidc** (Microsoft Entra ID). Cambiar de proveedor es una edición de `AUTH_MODE`, no un cambio de código.
+
+### Novedades en 2.5
+
+**Almacenamiento de tableros en el servidor + control de acceso por roles.** Los tableros ya no viven en `localStorage`: se guardan en el servicio de autenticación (`server/data/boards.json`) y se cargan por sesión, así que el espacio de trabajo te sigue entre navegadores y dispositivos. Tres roles ahora se aplican tanto en la interfaz como en el servidor:
+
+- **Admin** — acceso total: crea/elimina tableros, asigna o quita usuarios de tableros, crea/elimina cuentas, restablece contraseñas de cualquier usuario.
+- **Editor** — lee y edita tarjetas, columnas y comentarios solo en los tableros donde es miembro.
+- **Visor** — solo lectura en los tableros asignados; toda la interfaz de edición está oculta y el servidor también rechaza escrituras.
+
+La membresía es por tablero. Un administrador asigna usuarios específicos a tableros específicos desde **Configuración → Miembros del tablero**. Quien no es miembro nunca ve el tablero en su selector.
+
+**Panel de gestión de usuarios para administradores (modo local).** Configuración incluye un panel completo para administrar cuentas: agregar usuario nuevo (usuario / nombre / email / rol / contraseña), listar todas las cuentas, restablecer contraseñas con un clic y eliminar usuarios (se rechaza eliminar al único administrador).
+
+**Cambio de contraseña por el propio usuario.** Cualquier usuario autenticado puede cambiar su contraseña desde Configuración (modo local), con verificación de la actual y limitación de intentos.
+
+**Preferencias de tema e idioma por usuario.** El tema (claro/oscuro) y el idioma (en/es) ahora se guardan en el servidor por usuario (`server/data/preferences.json`) y te siguen entre dispositivos. Funciona en los tres modos de autenticación.
+
+**Experiencia móvil mejorada (≤768px).** Barra superior compacta, columnas con `scroll-snap` horizontal, gesto de mantener pulsado (250 ms) para arrastrar tarjetas sin interferir con el desplazamiento, botones más grandes para toques.
+
+> **Migración desde 2.1:** los tableros en `localStorage` no se migran automáticamente. El primer ingreso de un administrador muestra un espacio vacío; usa **Añadir tablero** para empezar de cero, o **Configuración → Importar** con un JSON exportado previamente para restaurar.
+
+La guía de instalación es idéntica a la versión inglesa — véase más arriba.
 
 ---
 

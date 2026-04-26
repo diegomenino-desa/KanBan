@@ -3,6 +3,7 @@ import cookieParser from 'cookie-parser';
 import { loadConfig } from './config.js';
 import { buildSessionMiddleware } from './session.js';
 import { buildAuthRouter } from './routes/auth.js';
+import { buildBoardsRouter } from './routes/boards.js';
 import { buildOidcRuntime, type OidcRuntime } from './providers/oidc.js';
 import { bootstrapAdminIfEmpty } from './providers/local.js';
 
@@ -33,6 +34,7 @@ async function main(): Promise<void> {
   }
 
   app.use('/auth', buildAuthRouter(config, oidc));
+  app.use('/api/boards', buildBoardsRouter(config));
 
   app.get('/healthz', (_req, res) => res.json({ ok: true, mode: config.mode }));
 

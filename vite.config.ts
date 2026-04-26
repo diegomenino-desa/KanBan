@@ -28,6 +28,10 @@ export default defineConfig({
         target: process.env.AUTH_SERVICE_URL ?? 'http://localhost:4000',
         changeOrigin: false,
       },
+      '/api': {
+        target: process.env.AUTH_SERVICE_URL ?? 'http://localhost:4000',
+        changeOrigin: false,
+      },
     },
   },
 })

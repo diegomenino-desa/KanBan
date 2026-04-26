@@ -11,9 +11,11 @@ import { translations } from '../../i18n';
 import { NewCardModal } from '../Cards/NewCardModal';
 
 export const BoardArea: React.FC = () => {
-  const { board, moveCard, reorderColumn, addColumn, reorderCard, lang } = useKanban();
+  const { board, moveCard, reorderColumn, addColumn, reorderCard, lang, canEdit } = useKanban();
   const t = translations[lang];
   const [isAddingExpedite, setIsAddingExpedite] = useState(false);
+
+  if (!board) return null;
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -33,6 +35,7 @@ export const BoardArea: React.FC = () => {
   );
 
   const handleDragEnd = (event: DragEndEvent) => {
+    if (!canEdit) return;
     const { active, over } = event;
     if (!over) return;
 
@@ -68,13 +71,15 @@ export const BoardArea: React.FC = () => {
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               {t.expediteLane}
             </div>
-            <button
-              className="btn btn-ghost"
-              onClick={() => setIsAddingExpedite(true)}
-              style={{ padding: '4px 10px', fontSize: '0.8rem', color: 'var(--rausch)' }}
-            >
-              <Plus size={14} /> {t.addExpediteCard}
-            </button>
+            {canEdit && (
+              <button
+                className="btn btn-ghost"
+                onClick={() => setIsAddingExpedite(true)}
+                style={{ padding: '4px 10px', fontSize: '0.8rem', color: 'var(--rausch)' }}
+              >
+                <Plus size={14} /> {t.addExpediteCard}
+              </button>
+            )}
           </div>
           <div className="swimlane-body">
             {expediteCards.length > 0 ? (
@@ -109,17 +114,19 @@ export const BoardArea: React.FC = () => {
             ))}
           </SortableContext>
 
-          {/* Add New Column Button */}
-          <div style={{ minWidth: 'var(--column-width)', padding: '0' }}>
-            <button
-              onClick={() => { const title = prompt('Enter new column name:'); if (title) addColumn(title); }}
-              style={{ width: '100%', height: '52px', border: '1px dashed var(--hairline)', borderRadius: 'var(--radius-lg)', background: 'transparent', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px', color: 'var(--ash)', fontFamily: 'inherit', fontWeight: 600, fontSize: '0.9rem', cursor: 'pointer', transition: 'all 0.1s ease' }}
-              onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.borderColor = 'var(--rausch)'; (e.currentTarget as HTMLButtonElement).style.color = 'var(--rausch)'; }}
-              onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.borderColor = 'var(--hairline)'; (e.currentTarget as HTMLButtonElement).style.color = 'var(--ash)'; }}
-            >
-              <Plus size={18} /> Add column
-            </button>
-          </div>
+          {/* Add New Column Button — editors and admins only */}
+          {canEdit && (
+            <div style={{ minWidth: 'var(--column-width)', padding: '0' }}>
+              <button
+                onClick={() => { const title = prompt('Enter new column name:'); if (title) addColumn(title); }}
+                style={{ width: '100%', height: '52px', border: '1px dashed var(--hairline)', borderRadius: 'var(--radius-lg)', background: 'transparent', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px', color: 'var(--ash)', fontFamily: 'inherit', fontWeight: 600, fontSize: '0.9rem', cursor: 'pointer', transition: 'all 0.1s ease' }}
+                onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.borderColor = 'var(--rausch)'; (e.currentTarget as HTMLButtonElement).style.color = 'var(--rausch)'; }}
+                onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.borderColor = 'var(--hairline)'; (e.currentTarget as HTMLButtonElement).style.color = 'var(--ash)'; }}
+              >
+                <Plus size={18} /> Add column
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </DndContext>

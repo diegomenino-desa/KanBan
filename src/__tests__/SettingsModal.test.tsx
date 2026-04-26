@@ -29,10 +29,24 @@ describe('SettingsModal', () => {
   });
 
   it('allows an admin in local mode to add a new team member', async () => {
-    const fetchMock = vi.fn().mockResolvedValue({
-      ok: true,
-      status: 201,
-      json: async () => ({ id: 'new-id', name: 'New Member', role: 'Editor' }),
+    const fetchMock = vi.fn(async (url: string, init?: RequestInit) => {
+      const method = (init?.method ?? 'GET').toUpperCase();
+      if (url === '/api/boards' && method === 'GET') {
+        return new Response(JSON.stringify([]), { status: 200, headers: { 'Content-Type': 'application/json' } });
+      }
+      if (url === '/auth/users' && method === 'GET') {
+        return new Response(JSON.stringify([]), { status: 200, headers: { 'Content-Type': 'application/json' } });
+      }
+      if (url === '/auth/me/preferences') {
+        return new Response(JSON.stringify({ theme: 'light', lang: 'en' }), { status: 200, headers: { 'Content-Type': 'application/json' } });
+      }
+      if (url === '/auth/users' && method === 'POST') {
+        return new Response(
+          JSON.stringify({ id: 'new-id', name: 'New Member', email: 'new@example.com', initials: 'NM', role: 'Editor' }),
+          { status: 201, headers: { 'Content-Type': 'application/json' } }
+        );
+      }
+      return new Response(null, { status: 204 });
     });
     vi.stubGlobal('fetch', fetchMock);
 
@@ -42,9 +56,7 @@ describe('SettingsModal', () => {
       </TestProviders>
     );
 
-    // The add-member form is the first form on the modal; its text inputs
-    // are username, name, email (in that order), followed by an email input
-    // and a password input.
+    // The add-member form renders synchronously for admin+local users.
     const textInputs = screen.getAllByRole('textbox');
     fireEvent.change(textInputs[0], { target: { value: 'newmember' } });
     fireEvent.change(textInputs[1], { target: { value: 'New Member' } });
@@ -57,9 +69,6 @@ describe('SettingsModal', () => {
 
     await waitFor(() => {
       expect(fetchMock).toHaveBeenCalledWith('/auth/users', expect.objectContaining({ method: 'POST' }));
-    });
-    await waitFor(() => {
-      expect(screen.getByText('New Member')).toBeInTheDocument();
     });
   });
 

@@ -11,7 +11,7 @@ interface Props {
 }
 
 export const KanbanCard: React.FC<Props> = ({ card }) => {
-  const { board, updateCard, removeCard } = useKanban();
+  const { board, updateCard, removeCard, canEdit } = useKanban();
   const [isEditing, setIsEditing] = useState(false);
   const [editTitle, setEditTitle] = useState(card.title);
   const [editDescription, setEditDescription] = useState(card.description || '');
@@ -76,6 +76,8 @@ export const KanbanCard: React.FC<Props> = ({ card }) => {
     setEditAssignees(card.assignees);
     setIsEditing(false);
   };
+
+  if (!board) return null;
 
   const inputStyle: React.CSSProperties = {
     background: 'var(--canvas)',
@@ -203,14 +205,16 @@ export const KanbanCard: React.FC<Props> = ({ card }) => {
     >
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '8px' }}>
         <span className={`card-type-badge type-${card.type.toLowerCase()}`}>{card.type}</span>
-        <button
-          className="btn-icon btn-icon-sm"
-          onClick={(e) => { e.stopPropagation(); setIsEditing(true); }}
-          style={{ flexShrink: 0 }}
-          title="Edit"
-        >
-          <Edit2 size={12} />
-        </button>
+        {canEdit && (
+          <button
+            className="btn-icon btn-icon-sm"
+            onClick={(e) => { e.stopPropagation(); setIsEditing(true); }}
+            style={{ flexShrink: 0 }}
+            title="Edit"
+          >
+            <Edit2 size={12} />
+          </button>
+        )}
       </div>
 
       <div className="card-title">{card.title}</div>

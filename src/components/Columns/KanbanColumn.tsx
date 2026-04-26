@@ -13,7 +13,7 @@ interface Props {
 }
 
 export const KanbanColumn: React.FC<Props> = ({ column, cards }) => {
-  const { updateColumn, removeColumn } = useKanban();
+  const { updateColumn, removeColumn, canEdit } = useKanban();
   const [isEditing, setIsEditing] = useState(false);
   const [editTitle, setEditTitle] = useState(column.title);
   const [editWipLimit, setEditWipLimit] = useState(column.wipLimit);
@@ -104,14 +104,16 @@ export const KanbanColumn: React.FC<Props> = ({ column, cards }) => {
                 )}
               </span>
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-              <button className="btn-icon btn-icon-sm" onClick={() => setIsAddingCard(true)} title="Add card">
-                <Plus size={14} />
-              </button>
-              <button className="btn-icon btn-icon-sm" onClick={() => setIsEditing(true)} title="Edit column">
-                <MoreVertical size={14} />
-              </button>
-            </div>
+            {canEdit && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                <button className="btn-icon btn-icon-sm" onClick={() => setIsAddingCard(true)} title="Add card">
+                  <Plus size={14} />
+                </button>
+                <button className="btn-icon btn-icon-sm" onClick={() => setIsEditing(true)} title="Edit column">
+                  <MoreVertical size={14} />
+                </button>
+              </div>
+            )}
           </>
         )}
       </div>
@@ -122,13 +124,15 @@ export const KanbanColumn: React.FC<Props> = ({ column, cards }) => {
             <KanbanCard key={card.id} card={card} />
           ))}
         </SortableContext>
-        <button
-          className="btn add-card-btn"
-          onClick={() => setIsAddingCard(true)}
-          style={{ width: '100%', padding: '10px', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '6px', fontSize: '0.85rem', fontWeight: 600 }}
-        >
-          <Plus size={16} /> Add card
-        </button>
+        {canEdit && (
+          <button
+            className="btn add-card-btn"
+            onClick={() => setIsAddingCard(true)}
+            style={{ width: '100%', padding: '10px', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '6px', fontSize: '0.85rem', fontWeight: 600 }}
+          >
+            <Plus size={16} /> Add card
+          </button>
+        )}
       </div>
 
       {isAddingCard && (
