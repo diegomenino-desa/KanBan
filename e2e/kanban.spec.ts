@@ -20,13 +20,20 @@ test.describe('Kanban Board E2E', () => {
       await page.getByLabel(/USERNAME/i).fill('admin');
       await page.getByLabel(/PASSWORD/i).fill('password123');
       await page.getByRole('button', { name: /Sign in/i }).click();
-      await expect(page.getByText('KanbanBoard', { exact: true })).toBeVisible();
+      // Wait for the login form to actually disappear before proceeding —
+      // the "KanbanBoard" wordmark exists on both the login page (logo) and
+      // the post-login nav, so checking for it here is a false positive that
+      // lets the test race ahead of the Set-Cookie response.
+      await expect(page.getByRole('heading', { name: /Sign in/i })).toBeHidden();
     }
 
     // Hermetic state: each test starts against a freshly-seeded board.
     await ensureFreshBoard(page);
     await page.reload();
-    await expect(page.getByText('KanbanBoard', { exact: true })).toBeVisible();
+    // Confirm the session cookie carried through the reload — if it didn't,
+    // we'd be back at the login screen and every subsequent assertion would
+    // fail with a misleading "Add card not found" timeout.
+    await expect(page.getByRole('heading', { name: /Sign in/i })).toBeHidden();
   });
 
   test('should load the kanban board', async ({ page }) => {
