@@ -268,8 +268,13 @@ npm run dev                    # tsx watch on :4000
 
 # Tests
 npm test                       # vitest
-npm run test:e2e               # playwright
+npm run test:e2e               # playwright (see note below)
 cd server && npm run typecheck
+
+# Playwright reads E2E_USERNAME / E2E_PASSWORD from the environment and
+# falls back to admin / password123 (the docker-compose bootstrap values).
+# If you've rotated the admin password since first boot, export them:
+#   E2E_USERNAME=admin E2E_PASSWORD='your-current-pw' npm run test:e2e
 ```
 
 ---

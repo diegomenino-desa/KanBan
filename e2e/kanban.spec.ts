@@ -1,5 +1,12 @@
 import { test, expect, type Page } from '@playwright/test';
 
+// Credentials for the test admin account, overridable via env vars so the
+// password doesn't have to be committed. Defaults match the docker-compose
+// BOOTSTRAP_ADMIN_* values for first-time setup; if you've since rotated
+// the admin password, set E2E_USERNAME / E2E_PASSWORD before running.
+const E2E_USERNAME = process.env.E2E_USERNAME ?? 'admin';
+const E2E_PASSWORD = process.env.E2E_PASSWORD ?? 'password123';
+
 test.describe('Kanban Board E2E', () => {
   // These tests share server-side board state, so run serially within this file.
   test.describe.configure({ mode: 'serial' });
@@ -17,8 +24,8 @@ test.describe('Kanban Board E2E', () => {
 
     // If we're on the login page, perform login.
     if (await page.getByRole('heading', { name: /Sign in/i }).isVisible()) {
-      await page.getByLabel(/USERNAME/i).fill('admin');
-      await page.getByLabel(/PASSWORD/i).fill('password123');
+      await page.getByLabel(/USERNAME/i).fill(E2E_USERNAME);
+      await page.getByLabel(/PASSWORD/i).fill(E2E_PASSWORD);
       await page.getByRole('button', { name: /Sign in/i }).click();
       // Wait for the login form to actually disappear before proceeding —
       // the "KanbanBoard" wordmark exists on both the login page (logo) and
