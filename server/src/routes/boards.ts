@@ -87,10 +87,6 @@ function isMember(board: Board, userId: string): boolean {
   return board.users.some((u) => u.id === userId);
 }
 
-function canRead(user: AuthUser, board: Board): boolean {
-  return user.role === 'Admin' || isMember(board, user.id);
-}
-
 function canWrite(user: AuthUser, board: Board): boolean {
   if (user.role === 'Viewer') return false;
   return user.role === 'Admin' || isMember(board, user.id);

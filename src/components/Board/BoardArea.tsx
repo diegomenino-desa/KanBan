@@ -15,8 +15,6 @@ export const BoardArea: React.FC = () => {
   const t = translations[lang];
   const [isAddingExpedite, setIsAddingExpedite] = useState(false);
 
-  if (!board) return null;
-
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
@@ -33,6 +31,8 @@ export const BoardArea: React.FC = () => {
       coordinateGetter: sortableKeyboardCoordinates,
     })
   );
+
+  if (!board) return null;
 
   const handleDragEnd = (event: DragEndEvent) => {
     if (!canEdit) return;
