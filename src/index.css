@@ -197,6 +197,33 @@ input, textarea, select {
   letter-spacing: -0.01em;
 }
 
+.top-nav-left {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  min-width: 0;
+}
+
+.top-nav-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.top-nav-boards {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-left: 1px solid var(--hairline);
+  padding-left: 24px;
+  min-width: 0;
+}
+
+.top-nav-boards select {
+  min-width: 0;
+  text-overflow: ellipsis;
+}
+
 /* Board wrapper */
 .board-wrapper {
   flex: 1;

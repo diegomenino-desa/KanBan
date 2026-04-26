@@ -24,7 +24,7 @@ interface KanbanContextProps {
   reorderColumn: (activeId: string, overId: string) => void;
   updateCard: (cardId: string, updates: Partial<KanbanCard>) => void;
   removeCard: (cardId: string) => void;
-  addUser: (name: string) => void;
+  addUser: (input: { id?: string; name: string; role?: User['role'] }) => void;
   removeUser: (id: string) => void;
   theme: 'light' | 'dark';
   setTheme: (theme: 'light' | 'dark') => void;
@@ -225,15 +225,19 @@ export const KanbanProvider: React.FC<{ children: ReactNode }> = ({ children }) 
     }));
   };
 
-  const addUser = (name: string) => {
-    const initials = name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() || 'U';
+  const addUser = (input: { id?: string; name: string; role?: User['role'] }) => {
+    const id = input.id ?? uuidv4();
+    const initials = input.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() || 'U';
     const newUser: User = {
-      id: uuidv4(),
-      name,
+      id,
+      name: input.name,
       initials,
-      role: 'Viewer'
+      role: input.role ?? 'Viewer'
     };
-    updateActiveBoard(prev => ({ ...prev, users: [...prev.users, newUser] }));
+    updateActiveBoard(prev => prev.users.some(u => u.id === id)
+      ? prev
+      : { ...prev, users: [...prev.users, newUser] }
+    );
   };
 
   const removeUser = (userId: string) => {

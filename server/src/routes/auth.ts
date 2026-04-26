@@ -1,14 +1,33 @@
-import { Router, type Request, type Response } from 'express';
+import { Router, type Request, type Response, type NextFunction } from 'express';
 import rateLimit from 'express-rate-limit';
 import { z } from 'zod';
 import type { Config } from '../config.js';
 import { authenticateLdap, LdapAuthError } from '../providers/ldap.js';
 import type { OidcRuntime } from '../providers/oidc.js';
-import { authenticateLocal, LocalAuthError } from '../providers/local.js';
+import {
+  authenticateLocal,
+  LocalAuthError,
+  changeLocalUserPassword,
+  createLocalUser,
+  UserMgmtError,
+} from '../providers/local.js';
 
 const LoginBody = z.object({
   username: z.string().min(1).max(256),
   password: z.string().min(1).max(1024),
+});
+
+const CreateUserBody = z.object({
+  username: z.string().min(1).max(64),
+  name: z.string().min(1).max(128),
+  email: z.string().email().max(256),
+  role: z.enum(['Admin', 'Editor', 'Viewer']),
+  password: z.string().min(8).max(1024),
+});
+
+const ChangePasswordBody = z.object({
+  currentPassword: z.string().min(1).max(1024),
+  newPassword: z.string().min(8).max(1024),
 });
 
 function buildLoginLimiter() {
@@ -19,6 +38,27 @@ function buildLoginLimiter() {
     legacyHeaders: false,
     message: { error: 'too_many_attempts' },
   });
+}
+
+function buildPasswordChangeLimiter() {
+  return rateLimit({
+    windowMs: 15 * 60 * 1000,
+    limit: 10,
+    standardHeaders: 'draft-7',
+    legacyHeaders: false,
+    message: { error: 'too_many_attempts' },
+  });
+}
+
+function requireAuth(req: Request, res: Response, next: NextFunction) {
+  if (!req.session.user) return res.status(401).json({ error: 'unauthenticated' });
+  return next();
+}
+
+function requireAdmin(req: Request, res: Response, next: NextFunction) {
+  if (!req.session.user) return res.status(401).json({ error: 'unauthenticated' });
+  if (req.session.user.role !== 'Admin') return res.status(403).json({ error: 'forbidden' });
+  return next();
 }
 
 export function buildAuthRouter(config: Config, oidc?: OidcRuntime): Router {
@@ -70,6 +110,39 @@ export function buildAuthRouter(config: Config, oidc?: OidcRuntime): Router {
           return res.status(401).json({ error: 'invalid_credentials' });
         }
         console.error('[local] auth failure:', (err as Error).message);
+        return res.status(503).json({ error: 'store_unavailable' });
+      }
+    });
+
+    router.post('/users', requireAdmin, async (req: Request, res: Response) => {
+      const parsed = CreateUserBody.safeParse(req.body);
+      if (!parsed.success) return res.status(400).json({ error: 'invalid_request' });
+      try {
+        const user = await createLocalUser(config, parsed.data);
+        return res.status(201).json(user);
+      } catch (err) {
+        if (err instanceof UserMgmtError && err.code === 'username_taken') {
+          return res.status(409).json({ error: 'username_taken' });
+        }
+        console.error('[local] create user failure:', (err as Error).message);
+        return res.status(503).json({ error: 'store_unavailable' });
+      }
+    });
+
+    router.post('/me/password', requireAuth, buildPasswordChangeLimiter(), async (req: Request, res: Response) => {
+      const parsed = ChangePasswordBody.safeParse(req.body);
+      if (!parsed.success) return res.status(400).json({ error: 'invalid_request' });
+      try {
+        await changeLocalUserPassword(config, req.session.user!.id, parsed.data.currentPassword, parsed.data.newPassword);
+        return res.status(204).end();
+      } catch (err) {
+        if (err instanceof UserMgmtError && err.code === 'invalid_password') {
+          return res.status(401).json({ error: 'invalid_password' });
+        }
+        if (err instanceof UserMgmtError && err.code === 'not_found') {
+          return res.status(404).json({ error: 'not_found' });
+        }
+        console.error('[local] change password failure:', (err as Error).message);
         return res.status(503).json({ error: 'store_unavailable' });
       }
     });

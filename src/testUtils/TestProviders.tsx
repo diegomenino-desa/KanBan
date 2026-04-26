@@ -1,5 +1,5 @@
 import React from 'react';
-import { AuthContext, type AuthContextValue, type AuthUser } from '../auth/AuthContext';
+import { AuthContext, type AuthContextValue, type AuthMode, type AuthUser } from '../auth/AuthContext';
 import { KanbanProvider } from '../KanbanContext';
 
 const defaultStubUser: AuthUser = {
@@ -11,11 +11,11 @@ const defaultStubUser: AuthUser = {
 };
 
 // eslint-disable-next-line react-refresh/only-export-components
-export function buildAuthStub(user: AuthUser | null = defaultStubUser): AuthContextValue {
+export function buildAuthStub(user: AuthUser | null = defaultStubUser, mode: AuthMode = 'ldap'): AuthContextValue {
   return {
     user,
     loading: false,
-    mode: 'ldap',
+    mode,
     error: null,
     loginPassword: async () => { /* noop */ },
     loginOidc: () => { /* noop */ },
@@ -26,8 +26,9 @@ export function buildAuthStub(user: AuthUser | null = defaultStubUser): AuthCont
 export const TestProviders: React.FC<{
   children: React.ReactNode;
   user?: AuthUser | null;
-}> = ({ children, user }) => {
-  const value = buildAuthStub(user === undefined ? defaultStubUser : user);
+  mode?: AuthMode;
+}> = ({ children, user, mode }) => {
+  const value = buildAuthStub(user === undefined ? defaultStubUser : user, mode);
   return (
     <AuthContext.Provider value={value}>
       <KanbanProvider>{children}</KanbanProvider>

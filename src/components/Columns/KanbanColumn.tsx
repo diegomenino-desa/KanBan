@@ -105,10 +105,10 @@ export const KanbanColumn: React.FC<Props> = ({ column, cards }) => {
               </span>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-              <button className="btn-icon" onClick={() => setIsAddingCard(true)} title="Add card" style={{ width: '30px', height: '30px' }}>
+              <button className="btn-icon btn-icon-sm" onClick={() => setIsAddingCard(true)} title="Add card">
                 <Plus size={14} />
               </button>
-              <button className="btn-icon" onClick={() => setIsEditing(true)} title="Edit column" style={{ width: '30px', height: '30px' }}>
+              <button className="btn-icon btn-icon-sm" onClick={() => setIsEditing(true)} title="Edit column">
                 <MoreVertical size={14} />
               </button>
             </div>

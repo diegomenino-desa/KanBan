@@ -337,6 +337,19 @@
   transform: scale(0.92);
 }
 
+/* Smaller variant — used inside column headers and card headers */
+.btn-icon-sm {
+  width: 30px;
+  height: 30px;
+}
+
+/* Settings: 2-column grid that collapses to one on narrow widths */
+.settings-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
 /* ─── Form inputs ────────────────────────────────────────── */
 .airbnb-input {
   background: var(--canvas);
@@ -363,4 +376,104 @@
 }
 .suggestion-item:hover {
   background: var(--soft-cloud);
+}
+
+/* ─── Mobile (≤768px) ───────────────────────────────────── */
+@media (max-width: 768px) {
+  :root {
+    --column-width: min(86vw, 320px);
+  }
+
+  .top-nav {
+    height: auto;
+    min-height: 60px;
+    padding: 10px 14px;
+    gap: 8px;
+  }
+
+  .top-nav-left {
+    gap: 10px;
+    flex: 1;
+  }
+
+  .top-nav-logo span {
+    display: none;
+  }
+
+  .top-nav-boards {
+    border-left: none;
+    padding-left: 10px;
+    flex: 1;
+  }
+
+  .top-nav-right {
+    gap: 4px;
+  }
+
+  /* Hide text labels on top-nav buttons; keep icons */
+  .top-nav-right .btn .btn-label {
+    display: none;
+  }
+
+  .top-nav-right .btn {
+    padding: 10px;
+  }
+
+  /* Bigger touch targets on mobile */
+  .btn-icon {
+    width: 40px;
+    height: 40px;
+  }
+  .btn-icon-sm {
+    width: 36px;
+    height: 36px;
+  }
+
+  .board-wrapper {
+    padding: 12px;
+  }
+
+  .board-scroll-area {
+    gap: 12px;
+    padding-bottom: 12px;
+    scroll-snap-type: x proximity;
+    touch-action: pan-x pan-y;
+  }
+
+  .kanban-column {
+    scroll-snap-align: start;
+  }
+
+  .column-header {
+    padding: 12px 14px;
+  }
+
+  .column-body {
+    padding: 10px;
+    touch-action: pan-y;
+  }
+
+  .kanban-card {
+    padding: 14px;
+  }
+
+  .swimlane-header {
+    padding: 8px 12px;
+    font-size: 0.8rem;
+  }
+
+  .swimlane-body {
+    padding: 10px 12px;
+    gap: 10px;
+  }
+
+  /* Modal: nearly fullscreen, tighter padding */
+  .modal-backdrop {
+    padding: 12px;
+  }
+
+  /* Collapse settings 2-col grids on narrow widths */
+  .settings-grid-2 {
+    grid-template-columns: 1fr;
+  }
 }

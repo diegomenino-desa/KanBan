@@ -204,9 +204,9 @@ export const KanbanCard: React.FC<Props> = ({ card }) => {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '8px' }}>
         <span className={`card-type-badge type-${card.type.toLowerCase()}`}>{card.type}</span>
         <button
-          className="btn-icon"
+          className="btn-icon btn-icon-sm"
           onClick={(e) => { e.stopPropagation(); setIsEditing(true); }}
-          style={{ width: '28px', height: '28px', flexShrink: 0 }}
+          style={{ flexShrink: 0 }}
           title="Edit"
         >
           <Edit2 size={12} />

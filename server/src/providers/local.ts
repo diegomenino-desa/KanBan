@@ -41,6 +41,10 @@ export async function hashPassword(plain: string): Promise<string> {
   return bcrypt.hash(plain, BCRYPT_COST);
 }
 
+export async function verifyPassword(plain: string, hash: string): Promise<boolean> {
+  return bcrypt.compare(plain, hash);
+}
+
 // ─── Store I/O ─────────────────────────────────────────────
 
 function emptyStore(): LocalStore {
@@ -110,6 +114,66 @@ export async function authenticateLocal(
     initials: initialsFromName(user.name),
     role: user.role,
   };
+}
+
+// ─── User management ───────────────────────────────────────
+
+export interface CreateUserInput {
+  username: string;
+  name: string;
+  email: string;
+  role: AppRole;
+  password: string;
+}
+
+export class UserMgmtError extends Error {
+  constructor(message: string, public code: 'username_taken' | 'not_found' | 'invalid_password' | 'last_admin') {
+    super(message);
+  }
+}
+
+export async function createLocalUser(config: LocalConfig, input: CreateUserInput): Promise<AuthUser> {
+  const store = await readStore(config.LOCAL_USERS_PATH);
+  const needle = input.username.toLowerCase();
+  if (store.users.some((u) => u.username.toLowerCase() === needle)) {
+    throw new UserMgmtError(`Username '${input.username}' already exists`, 'username_taken');
+  }
+  const now = Date.now();
+  const user: LocalUser = {
+    id: randomUUID(),
+    username: input.username,
+    name: input.name,
+    email: input.email,
+    role: input.role,
+    passwordHash: await hashPassword(input.password),
+    createdAt: now,
+    updatedAt: now,
+  };
+  store.users.push(user);
+  await writeStore(config.LOCAL_USERS_PATH, store);
+  return {
+    id: user.id,
+    name: user.name,
+    email: user.email,
+    initials: initialsFromName(user.name),
+    role: user.role,
+  };
+}
+
+export async function changeLocalUserPassword(
+  config: LocalConfig,
+  userId: string,
+  currentPassword: string,
+  newPassword: string,
+): Promise<void> {
+  const store = await readStore(config.LOCAL_USERS_PATH);
+  const user = store.users.find((u) => u.id === userId);
+  if (!user) throw new UserMgmtError('User not found', 'not_found');
+  const ok = await verifyPassword(currentPassword, user.passwordHash);
+  if (!ok) throw new UserMgmtError('Current password is incorrect', 'invalid_password');
+  user.passwordHash = await hashPassword(newPassword);
+  user.updatedAt = Date.now();
+  await writeStore(config.LOCAL_USERS_PATH, store);
 }
 
 // ─── Bootstrap ─────────────────────────────────────────────

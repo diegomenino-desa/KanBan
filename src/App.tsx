@@ -26,13 +26,13 @@ const KanbanApp = () => {
   return (
     <div className={`app-container ${theme === 'dark' ? 'dark-theme' : ''}`}>
       <nav className="top-nav">
-        <div style={{ display: 'flex', alignItems: 'center', gap: '24px' }}>
+        <div className="top-nav-left">
           <div className="top-nav-logo">
             <LayoutDashboard size={22} />
             <span>KanbanBoard</span>
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', borderLeft: '1px solid var(--hairline)', paddingLeft: '24px' }}>
+          <div className="top-nav-boards">
             <select
               value={activeBoardId}
               onChange={(e) => setActiveBoardId(e.target.value)}
@@ -60,12 +60,12 @@ const KanbanApp = () => {
           </div>
         </div>
 
-        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-          <button className="btn btn-ghost" onClick={() => setShowSettings(true)}>
-            <Settings size={16} /> {t.settings}
+        <div className="top-nav-right">
+          <button className="btn btn-ghost" onClick={() => setShowSettings(true)} title={t.settings}>
+            <Settings size={16} /> <span className="btn-label">{t.settings}</span>
           </button>
-          <button className="btn btn-ghost" onClick={() => setShowDashboard(true)}>
-            <BarChart3 size={16} /> {t.analytics}
+          <button className="btn btn-ghost" onClick={() => setShowDashboard(true)} title={t.analytics}>
+            <BarChart3 size={16} /> <span className="btn-label">{t.analytics}</span>
           </button>
           <button
             className="btn-icon"

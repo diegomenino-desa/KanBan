@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { SettingsModal } from '../components/Settings/SettingsModal';
 import { TestProviders } from '../testUtils/TestProviders';
 
@@ -28,20 +28,49 @@ describe('SettingsModal', () => {
     expect(screen.getByText('Theme')).toBeInTheDocument();
   });
 
-  it('allows adding a new team member', () => {
+  it('allows an admin in local mode to add a new team member', async () => {
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      status: 201,
+      json: async () => ({ id: 'new-id', name: 'New Member', role: 'Editor' }),
+    });
+    vi.stubGlobal('fetch', fetchMock);
+
     render(
-      <TestProviders>
+      <TestProviders mode="local">
         <SettingsModal onClose={() => {}} />
       </TestProviders>
     );
 
-    const input = screen.getByPlaceholderText('Add New Member');
-    const addButton = screen.getByText('Add');
+    // The add-member form is the first form on the modal; its text inputs
+    // are username, name, email (in that order), followed by an email input
+    // and a password input.
+    const textInputs = screen.getAllByRole('textbox');
+    fireEvent.change(textInputs[0], { target: { value: 'newmember' } });
+    fireEvent.change(textInputs[1], { target: { value: 'New Member' } });
+    const emailInput = document.querySelector('input[type="email"]') as HTMLInputElement;
+    fireEvent.change(emailInput, { target: { value: 'new@example.com' } });
+    const passwordInput = document.querySelector('input[type="password"]') as HTMLInputElement;
+    fireEvent.change(passwordInput, { target: { value: 'supersecret' } });
 
-    fireEvent.change(input, { target: { value: 'New Member' } });
-    fireEvent.click(addButton);
+    fireEvent.click(screen.getByRole('button', { name: /add member/i }));
 
-    expect(screen.getByText('New Member')).toBeInTheDocument();
+    await waitFor(() => {
+      expect(fetchMock).toHaveBeenCalledWith('/auth/users', expect.objectContaining({ method: 'POST' }));
+    });
+    await waitFor(() => {
+      expect(screen.getByText('New Member')).toBeInTheDocument();
+    });
+  });
+
+  it('hides the add-member form in non-local auth modes', () => {
+    render(
+      <TestProviders mode="ldap">
+        <SettingsModal onClose={() => {}} />
+      </TestProviders>
+    );
+    expect(screen.queryByRole('button', { name: /add member/i })).not.toBeInTheDocument();
+    expect(screen.getByText(/managed in your directory/i)).toBeInTheDocument();
   });
 
   it('handles export data', () => {
