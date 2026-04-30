@@ -36,5 +36,8 @@ dist-ssr
 /server/data/preferences.json.*.tmp
 /server/.env
 
+# Root .env (docker-compose secrets)
+/.env
+
 # Claude Code per-project config
 /.claude/

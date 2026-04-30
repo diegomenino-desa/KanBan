@@ -5,7 +5,7 @@ import { test, expect, type Page } from '@playwright/test';
 // BOOTSTRAP_ADMIN_* values for first-time setup; if you've since rotated
 // the admin password, set E2E_USERNAME / E2E_PASSWORD before running.
 const E2E_USERNAME = process.env.E2E_USERNAME ?? 'admin';
-const E2E_PASSWORD = process.env.E2E_PASSWORD ?? 'password123';
+const E2E_PASSWORD = process.env.E2E_PASSWORD ?? 'password';
 
 test.describe('Kanban Board E2E', () => {
   // These tests share server-side board state, so run serially within this file.

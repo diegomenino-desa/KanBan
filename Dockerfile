@@ -1,18 +1,24 @@
-# Build stage
-FROM node:20-alpine
+# ── build stage ────────────────────────────────────────────────────────────────
+FROM node:20-alpine AS builder
 
 WORKDIR /app
 
-# Ensure we have the necessary tools for some node builds
 RUN apk add --no-cache libc6-compat
 
 COPY package*.json ./
-# Remove host lockfile to ensure container-specific native bindings are fetched
 RUN rm -f package-lock.json && npm install --legacy-peer-deps
 
 COPY . .
+ARG VITE_AUTH_MODE=local
+ENV VITE_AUTH_MODE=$VITE_AUTH_MODE
+RUN npm run build
 
-# Vite default port is 5173
-EXPOSE 5173
+# ── runtime stage ──────────────────────────────────────────────────────────────
+FROM nginx:1.27-alpine AS runner
 
-CMD ["npm", "run", "dev"]
+COPY --from=builder /app/dist /usr/share/nginx/html
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+
+EXPOSE 80
+
+CMD ["nginx", "-g", "daemon off;"]

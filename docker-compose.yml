@@ -1,14 +1,12 @@
 services:
   kanban:
     container_name: kanban-app
-    build: .
+    build:
+      context: .
+      args:
+        - VITE_AUTH_MODE=ldap
     ports:
-      - "8102:5173"
-    environment:
-      - NODE_ENV=development
-      - AUTH_SERVICE_URL=http://auth:4000
-      # Choose login UI: ldap | local (username+password form) or oidc (Microsoft button)
-      - VITE_AUTH_MODE=local
+      - "8102:80"
     depends_on:
       - auth
     networks:
@@ -21,37 +19,37 @@ services:
     ports:
       - "4000:4000"
     environment:
-      # Copy values from server/.env.example and override here for your environment.
-      - AUTH_MODE=local
+      - AUTH_MODE=ldap
       - PORT=4000
-      - NODE_ENV=development
-      - SESSION_SECRET=${SESSION_SECRET:-dev-secret-change-me-change-me-change-me}
-      - APP_BASE_URL=http://localhost:8102
-      # LDAP (on-prem AD)
-      #- LDAP_URL=${LDAP_URL:-ldaps://dc.corp.example:636}
-      #- LDAP_BIND_DN_TEMPLATE=${LDAP_BIND_DN_TEMPLATE:-{{username}}@corp.example}
-      #- LDAP_SEARCH_BASE=${LDAP_SEARCH_BASE:-dc=corp,dc=example}
+      - NODE_ENV=production
+      # Set SESSION_SECRET in a .env file at the repo root (never commit it).
+      # Generate one with: openssl rand -hex 32
+      - SESSION_SECRET=${SESSION_SECRET:?SESSION_SECRET must be set}
+      - APP_BASE_URL=${APP_BASE_URL:-http://localhost:8102}
 
-      # Example with forumsys public LDAP server
-      #- LDAP_URL=ldap://ldap.forumsys.com:389
-      #- LDAP_BIND_DN_TEMPLATE=uid={{username}},dc=example,dc=com
-      #- LDAP_SEARCH_BASE=dc=example,dc=com
-      #- LDAP_SEARCH_FILTER=(uid={{username}})
-      #- LDAP_DEFAULT_ROLE=Admin
+      # LDAP — point at your AD/LDAP server. Use ldaps:// in production.
+      - LDAP_URL=${LDAP_URL:?LDAP_URL must be set}
+      - LDAP_BIND_DN_TEMPLATE=${LDAP_BIND_DN_TEMPLATE:?LDAP_BIND_DN_TEMPLATE must be set}
+      - LDAP_SEARCH_BASE=${LDAP_SEARCH_BASE:?LDAP_SEARCH_BASE must be set}
+      - LDAP_SEARCH_FILTER=${LDAP_SEARCH_FILTER}
+      - LDAP_ROLE_MAP=${LDAP_ROLE_MAP:-{}}
+      - LDAP_DEFAULT_ROLE=${LDAP_DEFAULT_ROLE:-Viewer}
+      - LDAP_ALLOW_PLAINTEXT=${LDAP_ALLOW_PLAINTEXT:-false}
+      # TLS — for self-signed / internal CA certs:
+      #- LDAP_TLS_CA_CERT_PATH=/app/certs/ldap-ca.pem
+      # Set to 'false' only as a last resort (skips cert verification entirely):
+      #- LDAP_TLS_REJECT_UNAUTHORIZED=false
 
-      # OIDC (Entra ID) — uncomment AUTH_MODE=oidc above and fill these:
-      # - OIDC_TENANT_ID=${OIDC_TENANT_ID}
-      # - OIDC_CLIENT_ID=${OIDC_CLIENT_ID}
-      # - OIDC_CLIENT_SECRET=${OIDC_CLIENT_SECRET}
-      # - OIDC_REDIRECT_URI=http://localhost:8102/auth/callback
+      # OIDC (Entra ID) — switch AUTH_MODE=oidc and fill these:
+      #- OIDC_TENANT_ID=${OIDC_TENANT_ID}
+      #- OIDC_CLIENT_ID=${OIDC_CLIENT_ID}
+      #- OIDC_CLIENT_SECRET=${OIDC_CLIENT_SECRET}
+      #- OIDC_REDIRECT_URI=${APP_BASE_URL}/auth/callback
 
-      # Local mode — set AUTH_MODE=local above, then uncomment these.
-      # Bootstrap vars seed a single Admin on first start when the store is
-      # empty, then can be removed. Manage users later with:
-      #   docker compose exec auth npm run user:add <user> <name> <email> <role>
-      - LOCAL_USERS_PATH=/app/data/users.json
-      - BOOTSTRAP_ADMIN_USER=admin
-      - BOOTSTRAP_ADMIN_PASSWORD=password123
+      # Local mode — switch AUTH_MODE=local and fill these:
+      #- LOCAL_USERS_PATH=/app/data/users.json
+      #- BOOTSTRAP_ADMIN_USER=admin
+      #- BOOTSTRAP_ADMIN_PASSWORD=${BOOTSTRAP_ADMIN_PASSWORD}
     volumes:
       - ./server/data:/app/data
     networks:

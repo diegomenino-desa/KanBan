@@ -6,3 +6,11 @@ dist
 *.md
 Dockerfile
 docker-compose.yml
+.env
+e2e
+src/__tests__
+src/vitest.setup.ts
+src/testUtils
+playwright.config.ts
+playwright-report
+test-results

@@ -31,6 +31,8 @@ const BaseSchema = z.object({
   APP_BASE_URL: z.string().url().default('http://localhost:5173'),
   BOARDS_STORE_PATH: z.string().default('./data/boards.json'),
   PREFERENCES_STORE_PATH: z.string().default('./data/preferences.json'),
+  // Set to 'true' to allow plaintext ldap:// in production (e.g. public demo servers).
+  LDAP_ALLOW_PLAINTEXT: z.string().optional(),
 });
 
 const LdapSchema = z.object({
@@ -40,6 +42,10 @@ const LdapSchema = z.object({
   LDAP_SEARCH_FILTER: z.string().default('(|(sAMAccountName={{username}})(userPrincipalName={{username}}))'),
   LDAP_ROLE_MAP: RoleMapSchema,
   LDAP_DEFAULT_ROLE: AppRoleSchema.default('Viewer'),
+  // Path to a PEM CA certificate file for verifying self-signed LDAPS certs.
+  LDAP_TLS_CA_CERT_PATH: z.string().optional(),
+  // Set to 'true' to disable TLS certificate verification (not recommended for production).
+  LDAP_TLS_REJECT_UNAUTHORIZED: z.string().default('true'),
 });
 
 const OidcSchema = z.object({
@@ -67,8 +73,8 @@ export function loadConfig(): Config {
 
   if (base.AUTH_MODE === 'ldap') {
     const ldap = LdapSchema.parse(process.env);
-    if (base.NODE_ENV === 'production' && ldap.LDAP_URL.startsWith('ldap://')) {
-      throw new Error('Refusing to start: LDAPS required in production (set LDAP_URL=ldaps://…)');
+    if (base.NODE_ENV === 'production' && ldap.LDAP_URL.startsWith('ldap://') && base.LDAP_ALLOW_PLAINTEXT !== 'true') {
+      throw new Error('Refusing to start: LDAPS required in production (set LDAP_URL=ldaps://… or LDAP_ALLOW_PLAINTEXT=true for demo servers)');
     }
     return { mode: 'ldap', ...base, ...ldap };
   }

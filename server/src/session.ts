@@ -13,7 +13,7 @@ export function buildSessionMiddleware(config: Config): RequestHandler {
     rolling: true,
     cookie: {
       httpOnly: true,
-      secure: config.NODE_ENV === 'production',
+      secure: config.APP_BASE_URL.startsWith('https://'),
       sameSite: 'strict',
       maxAge: EIGHT_HOURS_MS,
       path: '/',

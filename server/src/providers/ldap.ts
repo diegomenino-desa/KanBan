@@ -1,3 +1,4 @@
+import fs from 'node:fs';
 import ldap from 'ldapjs';
 import type { Config } from '../config.js';
 import { type AppRole, type AuthUser, initialsFromName } from '../types.js';
@@ -43,7 +44,20 @@ export async function authenticateLdap(
   }
 
   const bindDn = render(config.LDAP_BIND_DN_TEMPLATE, username);
-  const client = ldap.createClient({ url: config.LDAP_URL, connectTimeout: 5000, timeout: 8000 });
+
+  const tlsOptions: Record<string, unknown> = {
+    rejectUnauthorized: config.LDAP_TLS_REJECT_UNAUTHORIZED !== 'false',
+  };
+  if (config.LDAP_TLS_CA_CERT_PATH) {
+    tlsOptions['ca'] = [fs.readFileSync(config.LDAP_TLS_CA_CERT_PATH)];
+  }
+
+  const client = ldap.createClient({
+    url: config.LDAP_URL,
+    connectTimeout: 5000,
+    timeout: 8000,
+    tlsOptions,
+  });
 
   const cleanup = () => {
     try { client.unbind(); } catch { /* swallow */ }
