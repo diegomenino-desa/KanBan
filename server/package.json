@@ -1,7 +1,7 @@
 {
   "name": "kanbanboard-auth-service",
   "private": true,
-  "version": "2.5.0",
+  "version": "3.0.0",
   "description": "Auth proxy for KanbanBoard — dual-mode LDAP (on-prem AD) / OIDC (Entra ID)",
   "type": "module",
   "main": "dist/index.js",

@@ -1,4 +1,4 @@
-# KanbanBoard — v2.5
+# KanbanBoard — v3.0
 
 A multi-board Kanban workspace for teams that want a calm, travel-magazine feel over chrome-heavy UI, with pluggable enterprise authentication (Active Directory, Entra ID, or a built-in local user store).
 
@@ -6,7 +6,37 @@ A multi-board Kanban workspace for teams that want a calm, travel-magazine feel 
 
 ---
 
-## What's new in 2.5
+## What's new in v3.0
+
+### Production-grade Docker deployment
+
+The frontend and auth service now ship as lean, multi-stage Docker images ready for production:
+
+- **Frontend** — `node:20-alpine` build stage compiles the Vite SPA, then a bare `nginx:alpine` stage serves the static bundle. No Node.js runtime in prod.
+- **Auth service** — `tsc` compiles TypeScript in a build stage; the final image runs only compiled JS with no `devDependencies`.
+- **nginx reverse proxy** (`nginx.conf`) — handles SPA history-mode fallback (`try_files`), and proxies `/auth/*` and `/api/*` upstream to the auth service. One public port, no CORS.
+- **`SESSION_SECRET`** is now required at runtime (loaded from `.env` via docker-compose) — the service refuses to start without it.
+- Session cookie `secure` flag is driven by `APP_BASE_URL` scheme rather than `NODE_ENV`, so HTTPS is detected correctly behind a terminating proxy.
+- `.dockerignore` excludes test files, `e2e/`, and `.env` from build contexts.
+- `.env.example` documents every required and optional variable.
+
+### LDAPS TLS fine-tuning
+
+Three new variables let you adapt the LDAP TLS connection to corporate CAs and non-standard deployments:
+
+| Variable | Purpose |
+|---|---|
+| `LDAP_TLS_CA_CERT_PATH` | Path to a PEM bundle for an internal CA — mount it as a Docker secret or volume |
+| `LDAP_TLS_REJECT_UNAUTHORIZED` | Set to `false` to disable cert verification (dev/lab only — never in production) |
+| `LDAP_ALLOW_PLAINTEXT` | Set to `true` to allow `ldap://` in production (use with a TLS-terminating proxy) |
+
+### Security patch
+
+- `postcss` bumped to 8.5.12 (fixes [GHSA-qx2v-qp2m-jg93](https://github.com/advisories/GHSA-qx2v-qp2m-jg93)).
+
+---
+
+## What's new in v2.5
 
 ### Server-side board store + role-based access control
 
@@ -281,7 +311,7 @@ cd server && npm run typecheck
 
 ## 🇪🇸 Versión en Español
 
-KanbanBoard v2.5 es un espacio de trabajo Kanban multi-tablero con sistema de diseño inspirado en Airbnb (canvas blanco, acento coral Rausch, tipografía Inter) y autenticación empresarial conectable con tres modos: **local** (usuarios con contraseña bcrypt en un archivo JSON), **ldap** (Active Directory on-prem) y **oidc** (Microsoft Entra ID). Cambiar de proveedor es una edición de `AUTH_MODE`, no un cambio de código.
+KanbanBoard v3.0 es un espacio de trabajo Kanban multi-tablero con sistema de diseño inspirado en Airbnb (canvas blanco, acento coral Rausch, tipografía Inter) y autenticación empresarial conectable con tres modos: **local** (usuarios con contraseña bcrypt en un archivo JSON), **ldap** (Active Directory on-prem) y **oidc** (Microsoft Entra ID). Cambiar de proveedor es una edición de `AUTH_MODE`, no un cambio de código.
 
 ### Novedades en 2.5
 
