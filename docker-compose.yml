@@ -47,9 +47,9 @@ services:
       #- OIDC_REDIRECT_URI=${APP_BASE_URL}/auth/callback
 
       # Local mode — switch AUTH_MODE=local and fill these:
-      #- LOCAL_USERS_PATH=/app/data/users.json
-      #- BOOTSTRAP_ADMIN_USER=admin
-      #- BOOTSTRAP_ADMIN_PASSWORD=${BOOTSTRAP_ADMIN_PASSWORD}
+      - LOCAL_USERS_PATH=/app/data/users.json
+      - BOOTSTRAP_ADMIN_USER=admin
+      - BOOTSTRAP_ADMIN_PASSWORD=${BOOTSTRAP_ADMIN_PASSWORD}
     volumes:
       - ./server/data:/app/data
     networks:
