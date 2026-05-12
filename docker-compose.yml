@@ -24,17 +24,17 @@ services:
       - NODE_ENV=production
       # Set SESSION_SECRET in a .env file at the repo root (never commit it).
       # Generate one with: openssl rand -hex 32
-      - SESSION_SECRET=${SESSION_SECRET:?SESSION_SECRET must be set}
-      - APP_BASE_URL=${APP_BASE_URL:-http://localhost:8102}
+      - SESSION_SECRET=${SESSION_SECRET}
+      - APP_BASE_URL=${APP_BASE_URL}
 
       # LDAP — point at your AD/LDAP server. Use ldaps:// in production.
-      - LDAP_URL=${LDAP_URL:?LDAP_URL must be set}
-      - LDAP_BIND_DN_TEMPLATE=${LDAP_BIND_DN_TEMPLATE:?LDAP_BIND_DN_TEMPLATE must be set}
-      - LDAP_SEARCH_BASE=${LDAP_SEARCH_BASE:?LDAP_SEARCH_BASE must be set}
-      - LDAP_SEARCH_FILTER=${LDAP_SEARCH_FILTER}
-      - LDAP_ROLE_MAP=${LDAP_ROLE_MAP:-{}}
-      - LDAP_DEFAULT_ROLE=${LDAP_DEFAULT_ROLE:-Viewer}
-      - LDAP_ALLOW_PLAINTEXT=${LDAP_ALLOW_PLAINTEXT:-false}
+      #- LDAP_URL=${LDAP_URL:?LDAP_URL must be set}
+      #- LDAP_BIND_DN_TEMPLATE=${LDAP_BIND_DN_TEMPLATE:?LDAP_BIND_DN_TEMPLATE must be set}
+      #- LDAP_SEARCH_BASE=${LDAP_SEARCH_BASE:?LDAP_SEARCH_BASE must be set}
+      #- LDAP_SEARCH_FILTER=${LDAP_SEARCH_FILTER}
+      #- LDAP_ROLE_MAP=${LDAP_ROLE_MAP:-{}}
+      #- LDAP_DEFAULT_ROLE=${LDAP_DEFAULT_ROLE:-Viewer}
+      #- LDAP_ALLOW_PLAINTEXT=${LDAP_ALLOW_PLAINTEXT:-false}
       # TLS — for self-signed / internal CA certs:
       #- LDAP_TLS_CA_CERT_PATH=/app/certs/ldap-ca.pem
       # Set to 'false' only as a last resort (skips cert verification entirely):
