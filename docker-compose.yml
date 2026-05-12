@@ -4,7 +4,7 @@ services:
     build:
       context: .
       args:
-        - VITE_AUTH_MODE=ldap
+        - VITE_AUTH_MODE=local
     ports:
       - "8102:80"
     depends_on:
@@ -19,7 +19,7 @@ services:
     ports:
       - "4000:4000"
     environment:
-      - AUTH_MODE=ldap
+      - AUTH_MODE=local
       - PORT=4000
       - NODE_ENV=production
       # Set SESSION_SECRET in a .env file at the repo root (never commit it).
